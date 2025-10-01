@@ -120,13 +120,7 @@ export default function AdminSignupPage() {
             </CardDescription>
             
             {/* Warning about single admin */}
-            <Alert className="mt-4">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription className="text-sm">
-                <strong>Note:</strong> Only one admin account is allowed per system. 
-                If an admin already exists, you won't be able to create another one.
-              </AlertDescription>
-            </Alert>
+           
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
