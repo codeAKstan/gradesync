@@ -1,9 +1,18 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { GraduationCap, Users, FileText, BarChart3, CheckCircle2, Clock, Shield, Zap } from "lucide-react"
+import { GraduationCap, Users, FileText, BarChart3, CheckCircle2, Clock, Shield, Zap, Menu, X } from "lucide-react"
+import { useState } from "react"
 
 export default function LandingPage() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -15,6 +24,8 @@ export default function LandingPage() {
             </div>
             <span className="text-2xl font-bold text-foreground">GradeSync</span>
           </div>
+          
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
             <Link href="#features" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
               Features
@@ -26,7 +37,9 @@ export default function LandingPage() {
               For Teams
             </Link>
           </nav>
-          <div className="flex items-center gap-3">
+          
+          {/* Desktop Auth Buttons */}
+          <div className="hidden md:flex items-center gap-3">
             <Button variant="ghost" asChild>
               <Link href="/login">Log in</Link>
             </Button>
@@ -34,7 +47,57 @@ export default function LandingPage() {
               <Link href="/register">Get Started</Link>
             </Button>
           </div>
+
+          {/* Mobile Menu Toggle */}
+          <button
+            onClick={toggleMobileMenu}
+            className="md:hidden p-2 rounded-lg hover:bg-accent/10 transition-colors"
+            aria-label="Toggle mobile menu"
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-6 h-6 text-foreground" />
+            ) : (
+              <Menu className="w-6 h-6 text-foreground" />
+            )}
+          </button>
         </div>
+
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden border-t border-border bg-card/95 backdrop-blur-sm">
+            <nav className="container mx-auto px-4 py-4 space-y-4">
+              <Link 
+                href="#features" 
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Features
+              </Link>
+              <Link 
+                href="#benefits" 
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Benefits
+              </Link>
+              <Link 
+                href="#roles" 
+                className="block text-sm text-muted-foreground hover:text-foreground transition-colors py-2"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                For Teams
+              </Link>
+              <div className="pt-4 border-t border-border space-y-3">
+                <Button variant="ghost" className="w-full justify-start" asChild>
+                  <Link href="/login">Log in</Link>
+                </Button>
+                <Button className="w-full" asChild>
+                  <Link href="/register">Get Started</Link>
+                </Button>
+              </div>
+            </nav>
+          </div>
+        )}
       </header>
 
       {/* Hero Section */}
