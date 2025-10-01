@@ -135,43 +135,150 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="border-border">
+        {/* Management Sections */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Admin Management */}
+          <Card className="border-border hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Student Management
+                <Shield className="w-5 h-5" />
+                Admin Management
               </CardTitle>
               <CardDescription>
-                Manage student accounts, registrations, and profiles.
+                Create and manage admin accounts.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" disabled>
-                Manage Students (Coming Soon)
-              </Button>
+              <Link href="/admin/manage/admins">
+                <Button className="w-full">
+                  Manage Admins
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
-          <Card className="border-border">
+          {/* Academic Sessions */}
+          <Card className="border-border hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BarChart3 className="w-5 h-5" />
+                Academic Sessions
+              </CardTitle>
+              <CardDescription>
+                Create and manage academic sessions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/admin/manage/academic-sessions">
+                <Button className="w-full">
+                  Manage Sessions
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Semesters */}
+          <Card className="border-border hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BookOpen className="w-5 h-5" />
-                Course Management
+                Semesters
               </CardTitle>
               <CardDescription>
-                Create and manage courses, assignments, and grades.
+                Create and manage semesters.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" disabled>
-                Manage Courses (Coming Soon)
-              </Button>
+              <Link href="/admin/manage/semesters">
+                <Button className="w-full">
+                  Manage Semesters
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
-          <Card className="border-border">
+          {/* Departments */}
+          <Card className="border-border hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Departments
+              </CardTitle>
+              <CardDescription>
+                Create and manage departments.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/admin/manage/departments">
+                <Button className="w-full">
+                  Manage Departments
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Lecturers */}
+          <Card className="border-border hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Lecturers
+              </CardTitle>
+              <CardDescription>
+                Create and manage lecturer accounts.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/admin/manage/lecturers">
+                <Button className="w-full">
+                  Manage Lecturers
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Courses */}
+          <Card className="border-border hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5" />
+                Courses
+              </CardTitle>
+              <CardDescription>
+                Create and manage course records.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/admin/manage/courses">
+                <Button className="w-full">
+                  Manage Courses
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* Course Assignments */}
+          <Card className="border-border hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <GraduationCap className="w-5 h-5" />
+                Course Assignments
+              </CardTitle>
+              <CardDescription>
+                Assign courses to lecturers.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Link href="/admin/manage/course-assignments">
+                <Button className="w-full">
+                  Manage Assignments
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          {/* System Reports */}
+          <Card className="border-border hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5" />
@@ -188,7 +295,8 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card className="border-border">
+          {/* System Settings */}
+          <Card className="border-border hover:shadow-lg transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Settings className="w-5 h-5" />

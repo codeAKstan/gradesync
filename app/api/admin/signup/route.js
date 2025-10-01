@@ -13,18 +13,7 @@ export async function POST(request) {
     const db = client.db('gradesynce');
     const adminsCollection = db.collection('admins');
 
-    // Check if any admin already exists in the database
-    const existingAdminCount = await adminsCollection.countDocuments();
-    
-    if (existingAdminCount > 0) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          message: 'Admin account already exists. Only one admin is allowed per system.' 
-        },
-        { status: 403 }
-      );
-    }
+    // Allow multiple admins - removed restriction check
 
     // Check if admin with this email already exists (additional safety check)
     const existingAdmin = await adminsCollection.findOne({ email });
