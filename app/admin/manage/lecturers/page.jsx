@@ -52,8 +52,8 @@ export default function LecturersPage() {
         const lecturersData = await lecturersResponse.json();
         const departmentsData = await departmentsResponse.json();
         
-        setLecturers(lecturersData.lecturers);
-        setDepartments(departmentsData.departments);
+        setLecturers(lecturersData.data || []);
+        setDepartments(departmentsData.data || []);
       } else {
         toast({
           title: "Error",

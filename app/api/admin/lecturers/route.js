@@ -151,13 +151,13 @@ export async function POST(request) {
       email,
       password: temporaryPassword,
       staffId,
-      departmentId,
+      departmentId: new ObjectId(departmentId),
       phoneNumber,
       title,
       qualification,
       specialization,
       isActive: isActive !== undefined ? isActive : true,
-      createdBy: authResult.admin.id
+      createdBy: authResult.adminId
     });
 
     // Validate lecturer data

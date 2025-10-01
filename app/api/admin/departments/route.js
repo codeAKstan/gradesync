@@ -8,18 +8,10 @@ import { ObjectId } from 'mongodb';
 export async function GET(request) {
   try {
     // Verify admin authentication
-    const token = getTokenFromRequest(request);
-    if (!token) {
+    const authResult = await verifyToken(request);
+    if (!authResult.success) {
       return NextResponse.json(
-        { success: false, message: 'No token provided' },
-        { status: 401 }
-      );
-    }
-
-    const authResult = verifyToken(token);
-    if (!authResult) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid token' },
+        { success: false, message: 'Unauthorized' },
         { status: 401 }
       );
     }
@@ -48,18 +40,10 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     // Verify admin authentication
-    const token = getTokenFromRequest(request);
-    if (!token) {
+    const authResult = await verifyToken(request);
+    if (!authResult.success) {
       return NextResponse.json(
-        { success: false, message: 'No token provided' },
-        { status: 401 }
-      );
-    }
-
-    const authResult = verifyToken(token);
-    if (!authResult) {
-      return NextResponse.json(
-        { success: false, message: 'Invalid token' },
+        { success: false, message: 'Unauthorized' },
         { status: 401 }
       );
     }
@@ -98,7 +82,7 @@ export async function POST(request) {
       hodEmail,
       hodName,
       isActive: isActive !== undefined ? isActive : true,
-      createdBy: authResult.id || authResult.adminId || 'unknown'
+      createdBy: authResult.adminId || authResult.id || 'unknown'
     });
 
     // Validate department data

@@ -184,7 +184,7 @@ export async function PUT(request, { params }) {
       email: email || existingLecturer.email,
       password: password || existingLecturer.password,
       staffId: staffId || existingLecturer.staffId,
-      departmentId: departmentId || existingLecturer.departmentId,
+      departmentId: departmentId ? new ObjectId(departmentId) : existingLecturer.departmentId,
       phone: phone !== undefined ? phone : existingLecturer.phone,
       title: title !== undefined ? title : existingLecturer.title,
       qualification: qualification !== undefined ? qualification : existingLecturer.qualification,
