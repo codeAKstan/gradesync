@@ -1,17 +1,25 @@
 import { NextResponse } from 'next/server';
 import clientPromise from '@/lib/mongodb';
 import { Department } from '@/models/Department';
-import { verifyToken } from '@/lib/auth';
+import { verifyToken, getTokenFromRequest } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
 
 // GET - Fetch all departments
 export async function GET(request) {
   try {
     // Verify admin authentication
-    const authResult = await verifyToken(request);
-    if (!authResult.success) {
+    const token = getTokenFromRequest(request);
+    if (!token) {
       return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
+        { success: false, message: 'No token provided' },
+        { status: 401 }
+      );
+    }
+
+    const authResult = verifyToken(token);
+    if (!authResult) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid token' },
         { status: 401 }
       );
     }
@@ -40,10 +48,18 @@ export async function GET(request) {
 export async function POST(request) {
   try {
     // Verify admin authentication
-    const authResult = await verifyToken(request);
-    if (!authResult.success) {
+    const token = getTokenFromRequest(request);
+    if (!token) {
       return NextResponse.json(
-        { success: false, message: 'Unauthorized' },
+        { success: false, message: 'No token provided' },
+        { status: 401 }
+      );
+    }
+
+    const authResult = verifyToken(token);
+    if (!authResult) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid token' },
         { status: 401 }
       );
     }
@@ -82,7 +98,7 @@ export async function POST(request) {
       hodEmail,
       hodName,
       isActive: isActive !== undefined ? isActive : true,
-      createdBy: authResult.admin.id
+      createdBy: authResult.id || authResult.adminId || 'unknown'
     });
 
     // Validate department data

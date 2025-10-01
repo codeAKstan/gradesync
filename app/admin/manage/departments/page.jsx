@@ -41,20 +41,24 @@ export default function DepartmentsPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setDepartments(data.departments);
+        // Fix: The API returns data.data, not data.departments
+        setDepartments(data.data || []);
       } else {
         toast({
           title: "Error",
           description: "Failed to fetch departments",
           variant: "destructive"
         });
+        setDepartments([]); // Ensure departments is always an array
       }
     } catch (error) {
+      console.error('Error fetching departments:', error);
       toast({
         title: "Error",
         description: "An error occurred while fetching departments",
         variant: "destructive"
       });
+      setDepartments([]); // Ensure departments is always an array
     } finally {
       setLoading(false);
     }
@@ -271,7 +275,7 @@ export default function DepartmentsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {departments.length === 0 ? (
+          {departments && departments.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No departments found.</p>
             </div>
@@ -287,7 +291,7 @@ export default function DepartmentsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {departments.map((department) => (
+                {departments && departments.map((department) => (
                   <TableRow key={department._id}>
                     <TableCell className="font-medium">{department.name}</TableCell>
                     <TableCell>

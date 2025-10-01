@@ -25,9 +25,7 @@ export default function LecturersPage() {
     firstName: '',
     lastName: '',
     email: '',
-    staffId: '',
     departmentId: '',
-    password: '',
     phoneNumber: '',
     title: ''
   });
@@ -77,19 +75,10 @@ export default function LecturersPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.firstName || !formData.lastName || !formData.email || !formData.staffId || !formData.departmentId) {
+    if (!formData.firstName || !formData.lastName || !formData.email || !formData.departmentId) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (!editingLecturer && !formData.password) {
-      toast({
-        title: "Error",
-        description: "Password is required for new lecturers",
         variant: "destructive"
       });
       return;
@@ -119,18 +108,19 @@ export default function LecturersPage() {
       });
 
       if (response.ok) {
+        const responseData = await response.json();
         toast({
           title: "Success",
-          description: `Lecturer ${editingLecturer ? 'updated' : 'created'} successfully`
+          description: editingLecturer 
+            ? "Lecturer updated successfully" 
+            : `Lecturer created successfully. Temporary password sent to ${formData.email}`
         });
         
         setFormData({
           firstName: '',
           lastName: '',
           email: '',
-          staffId: '',
           departmentId: '',
-          password: '',
           phoneNumber: '',
           title: ''
         });
@@ -162,9 +152,7 @@ export default function LecturersPage() {
       firstName: lecturer.firstName,
       lastName: lecturer.lastName,
       email: lecturer.email,
-      staffId: lecturer.staffId,
       departmentId: lecturer.department._id,
-      password: '', // Don't populate password for security
       phoneNumber: lecturer.phoneNumber || '',
       title: lecturer.title || ''
     });
@@ -280,16 +268,6 @@ export default function LecturersPage() {
                     placeholder="Dr., Prof., Mr., Mrs."
                   />
                 </div>
-                <div>
-                  <Label htmlFor="staffId">Staff ID *</Label>
-                  <Input
-                    id="staffId"
-                    value={formData.staffId}
-                    onChange={(e) => setFormData({...formData, staffId: e.target.value})}
-                    placeholder="STAFF001"
-                    required
-                  />
-                </div>
               </div>
               
               <div>
@@ -331,33 +309,6 @@ export default function LecturersPage() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="password">Password *</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    value={formData.password}
-                    onChange={(e) => setFormData({...formData, password: e.target.value})}
-                    placeholder="Enter password"
-                    required
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </Button>
-                </div>
               </div>
 
               <div className="flex justify-end space-x-2">

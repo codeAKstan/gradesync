@@ -3,6 +3,7 @@ import clientPromise from '@/lib/mongodb';
 import { Lecturer } from '@/models/Lecturer';
 import { verifyToken } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
+import { generateStaffId, generateTemporaryPassword, sendTemporaryPasswordEmail } from '@/lib/email';
 
 // GET - Fetch all lecturers
 export async function GET(request) {
@@ -93,10 +94,8 @@ export async function POST(request) {
       firstName, 
       lastName, 
       email, 
-      password, 
-      staffId, 
       departmentId, 
-      phone, 
+      phoneNumber, 
       title, 
       qualification, 
       specialization, 
@@ -126,34 +125,34 @@ export async function POST(request) {
       );
     }
 
-    // Check if lecturer with same email or staff ID already exists
+    // Check if lecturer with same email already exists
     const existingLecturer = await lecturersCollection.findOne({
-      $or: [
-        { email: { $regex: new RegExp(`^${email}$`, 'i') } },
-        { staffId: { $regex: new RegExp(`^${staffId}$`, 'i') } }
-      ]
+      email: { $regex: new RegExp(`^${email}$`, 'i') }
     });
 
     if (existingLecturer) {
-      const duplicateField = existingLecturer.email.toLowerCase() === email.toLowerCase() ? 'email' : 'staff ID';
       return NextResponse.json(
         { 
           success: false, 
-          message: `Lecturer with this ${duplicateField} already exists` 
+          message: 'Lecturer with this email already exists' 
         },
         { status: 409 }
       );
     }
+
+    // Generate staff ID and temporary password
+    const staffId = await generateStaffId(department.code);
+    const temporaryPassword = generateTemporaryPassword();
 
     // Create new lecturer
     const lecturer = new Lecturer({
       firstName,
       lastName,
       email,
-      password,
+      password: temporaryPassword,
       staffId,
       departmentId,
-      phone,
+      phoneNumber,
       title,
       qualification,
       specialization,
@@ -176,6 +175,24 @@ export async function POST(request) {
     // Save to database
     const result = await lecturersCollection.insertOne(lecturer.toObject());
 
+    // Prepare lecturer data for email
+    const lecturerEmailData = {
+      firstName,
+      lastName,
+      title,
+      email,
+      staffId,
+      departmentName: department.name
+    };
+
+    // Send temporary password email
+    const emailResult = await sendTemporaryPasswordEmail(lecturerEmailData, temporaryPassword);
+    
+    if (!emailResult.success) {
+      console.error('Failed to send email:', emailResult.error);
+      // Don't fail the entire operation if email fails, just log it
+    }
+
     // Return lecturer data without password
     const lecturerData = lecturer.getPublicProfile();
     lecturerData.id = result.insertedId;
@@ -183,7 +200,8 @@ export async function POST(request) {
     return NextResponse.json({
       success: true,
       message: 'Lecturer created successfully',
-      data: lecturerData
+      data: lecturerData,
+      emailSent: emailResult.success
     }, { status: 201 });
 
   } catch (error) {
