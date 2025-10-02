@@ -18,6 +18,7 @@ export default function CoursesPage() {
   const router = useRouter();
   const [courses, setCourses] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [semesters, setSemesters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -29,8 +30,7 @@ export default function CoursesPage() {
     creditUnits: '',
     level: '',
     semester: '',
-    departmentId: '',
-    prerequisites: []
+    departmentId: ''
   });
 
   useEffect(() => {
@@ -41,22 +41,27 @@ export default function CoursesPage() {
     try {
       const token = localStorage.getItem('adminToken');
       
-      // Fetch courses and departments
-      const [coursesResponse, departmentsResponse] = await Promise.all([
+      // Fetch courses, departments, and semesters
+      const [coursesResponse, departmentsResponse, semestersResponse] = await Promise.all([
         fetch('/api/admin/courses', {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
         fetch('/api/admin/departments', {
           headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch('/api/admin/semesters', {
+          headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
 
-      if (coursesResponse.ok && departmentsResponse.ok) {
+      if (coursesResponse.ok && departmentsResponse.ok && semestersResponse.ok) {
         const coursesData = await coursesResponse.json();
         const departmentsData = await departmentsResponse.json();
+        const semestersData = await semestersResponse.json();
         
         setCourses(coursesData.courses);
-        setDepartments(departmentsData.departments);
+        setDepartments(departmentsData.data);
+        setSemesters(semestersData.data);
       } else {
         toast({
           title: "Error",
@@ -122,8 +127,7 @@ export default function CoursesPage() {
           creditUnits: '',
           level: '',
           semester: '',
-          departmentId: '',
-          prerequisites: []
+          departmentId: ''
         });
         
         setIsCreateDialogOpen(false);
@@ -152,12 +156,11 @@ export default function CoursesPage() {
     setFormData({
       title: course.title,
       code: course.code,
-      description: course.description || '',
+      description: course.description,
       creditUnits: course.creditUnits.toString(),
       level: course.level.toString(),
       semester: course.semester.toString(),
-      departmentId: course.department._id,
-      prerequisites: course.prerequisites || []
+      departmentId: course.department._id
     });
     setIsEditDialogOpen(true);
   };
@@ -197,27 +200,6 @@ export default function CoursesPage() {
         variant: "destructive"
       });
     }
-  };
-
-  const addPrerequisite = (courseId) => {
-    if (courseId && !formData.prerequisites.includes(courseId)) {
-      setFormData({
-        ...formData,
-        prerequisites: [...formData.prerequisites, courseId]
-      });
-    }
-  };
-
-  const removePrerequisite = (courseId) => {
-    setFormData({
-      ...formData,
-      prerequisites: formData.prerequisites.filter(id => id !== courseId)
-    });
-  };
-
-  const getCourseName = (courseId) => {
-    const course = courses.find(c => c._id === courseId);
-    return course ? `${course.code} - ${course.title}` : courseId;
   };
 
   if (loading) {
@@ -335,8 +317,11 @@ export default function CoursesPage() {
                       <SelectValue placeholder="Select semester" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="1">First Semester</SelectItem>
-                      <SelectItem value="2">Second Semester</SelectItem>
+                      {semesters && semesters.map((semester) => (
+                        <SelectItem key={semester._id} value={semester._id}>
+                          {semester.name} - {semester.academicSession.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -359,43 +344,6 @@ export default function CoursesPage() {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-
-              <div>
-                <Label>Prerequisites</Label>
-                <div className="space-y-2">
-                  <Select onValueChange={addPrerequisite}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Add prerequisite course" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {courses && courses
-                        .filter(course => !formData.prerequisites.includes(course._id))
-                        .map((course) => (
-                          <SelectItem key={course._id} value={course._id}>
-                            {course.code} - {course.title}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                  
-                  {formData.prerequisites.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {formData.prerequisites.map((prereqId) => (
-                        <Badge key={prereqId} variant="secondary" className="flex items-center gap-1">
-                          {getCourseName(prereqId)}
-                          <button
-                            type="button"
-                            onClick={() => removePrerequisite(prereqId)}
-                            className="ml-1 text-xs hover:text-red-500"
-                          >
-                            ×
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
               </div>
 
               <div className="flex justify-end space-x-2">
@@ -430,7 +378,6 @@ export default function CoursesPage() {
                   <TableHead>Level</TableHead>
                   <TableHead>Semester</TableHead>
                   <TableHead>Credit Units</TableHead>
-                  <TableHead>Prerequisites</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -457,24 +404,6 @@ export default function CoursesPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>{course.creditUnits} units</TableCell>
-                    <TableCell>
-                      {course.prerequisites && course.prerequisites.length > 0 ? (
-                        <div className="flex flex-wrap gap-1">
-                          {course.prerequisites.slice(0, 2).map((prereq) => (
-                            <Badge key={prereq._id} variant="secondary" className="text-xs">
-                              {prereq.code}
-                            </Badge>
-                          ))}
-                          {course.prerequisites.length > 2 && (
-                            <Badge variant="secondary" className="text-xs">
-                              +{course.prerequisites.length - 2} more
-                            </Badge>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">None</span>
-                      )}
-                    </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button
@@ -587,8 +516,11 @@ export default function CoursesPage() {
                     <SelectValue placeholder="Select semester" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="1">First Semester</SelectItem>
-                    <SelectItem value="2">Second Semester</SelectItem>
+                    {semesters && semesters.map((semester) => (
+                      <SelectItem key={semester._id} value={semester._id}>
+                        {semester.name} - {semester.academicSession.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -611,43 +543,6 @@ export default function CoursesPage() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            <div>
-              <Label>Prerequisites</Label>
-              <div className="space-y-2">
-                <Select onValueChange={addPrerequisite}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Add prerequisite course" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {courses && courses
-                      .filter(course => course._id !== editingCourse?._id && !formData.prerequisites.includes(course._id))
-                      .map((course) => (
-                        <SelectItem key={course._id} value={course._id}>
-                          {course.code} - {course.title}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-                
-                {formData.prerequisites.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {formData.prerequisites.map((prereqId) => (
-                      <Badge key={prereqId} variant="secondary" className="flex items-center gap-1">
-                        {getCourseName(prereqId)}
-                        <button
-                          type="button"
-                          onClick={() => removePrerequisite(prereqId)}
-                          className="ml-1 text-xs hover:text-red-500"
-                        >
-                          ×
-                        </button>
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
 
             <div className="flex justify-end space-x-2">
