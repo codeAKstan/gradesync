@@ -26,11 +26,11 @@ export default function CourseAssignmentsPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingAssignment, setEditingAssignment] = useState(null);
   const [filters, setFilters] = useState({
-    lecturerId: '',
-    courseId: '',
-    academicSessionId: '',
-    semesterId: '',
-    isActive: ''
+    lecturerId: 'all',
+    courseId: 'all',
+    academicSessionId: 'all',
+    semesterId: 'all',
+    isActive: 'all'
   });
   const [formData, setFormData] = useState({
     courseId: '',
@@ -74,10 +74,10 @@ export default function CourseAssignmentsPage() {
         const academicSessionsData = await academicSessionsResponse.json();
         const semestersData = await semestersResponse.json();
         
-        setCourses(coursesData.courses);
-        setLecturers(lecturersData.lecturers);
-        setAcademicSessions(academicSessionsData.academicSessions);
-        setSemesters(semestersData.semesters);
+        setCourses(coursesData.data || []);
+        setLecturers(lecturersData.data || []);
+        setAcademicSessions(academicSessionsData.data || []);
+        setSemesters(semestersData.data || []);
       } else {
         toast({
           title: "Error",
@@ -103,7 +103,7 @@ export default function CourseAssignmentsPage() {
       // Build query parameters
       const queryParams = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) queryParams.append(key, value);
+        if (value && value !== 'all') queryParams.append(key, value);
       });
 
       const response = await fetch(`/api/admin/course-assignments?${queryParams}`, {
@@ -244,17 +244,20 @@ export default function CourseAssignmentsPage() {
 
   const clearFilters = () => {
     setFilters({
-      lecturerId: '',
-      courseId: '',
-      academicSessionId: '',
-      semesterId: '',
-      isActive: ''
+      lecturerId: 'all',
+      courseId: 'all',
+      academicSessionId: 'all',
+      semesterId: 'all',
+      isActive: 'all'
     });
   };
 
   const getAvailableSemesters = (academicSessionId) => {
-    return semesters && semesters.filter(semester => 
-      !academicSessionId || semester.academicSession._id === academicSessionId
+    if (!semesters || !Array.isArray(semesters)) {
+      return [];
+    }
+    return semesters.filter(semester => 
+      !academicSessionId || semester.academicSession?._id === academicSessionId
     );
   };
 
@@ -414,7 +417,7 @@ export default function CourseAssignmentsPage() {
                   <SelectValue placeholder="All lecturers" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="">All lecturers</SelectItem>
+                    <SelectItem value="all">All lecturers</SelectItem>
                     {lecturers && lecturers.map((lecturer) => (
                       <SelectItem key={lecturer._id} value={lecturer._id}>
                         {lecturer.firstName} {lecturer.lastName}
@@ -434,7 +437,7 @@ export default function CourseAssignmentsPage() {
                   <SelectValue placeholder="All courses" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="">All courses</SelectItem>
+                    <SelectItem value="all">All courses</SelectItem>
                     {courses && courses.map((course) => (
                       <SelectItem key={course._id} value={course._id}>
                         {course.code}
@@ -454,7 +457,7 @@ export default function CourseAssignmentsPage() {
                   <SelectValue placeholder="All sessions" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="">All sessions</SelectItem>
+                    <SelectItem value="all">All sessions</SelectItem>
                     {academicSessions && academicSessions.map((session) => (
                       <SelectItem key={session._id} value={session._id}>
                         {session.name}
@@ -474,7 +477,7 @@ export default function CourseAssignmentsPage() {
                   <SelectValue placeholder="All semesters" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="">All semesters</SelectItem>
+                    <SelectItem value="all">All semesters</SelectItem>
                     {semesters && semesters.map((semester) => (
                       <SelectItem key={semester._id} value={semester._id}>
                         {semester.name}
@@ -494,7 +497,7 @@ export default function CourseAssignmentsPage() {
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All statuses</SelectItem>
+                  <SelectItem value="all">All statuses</SelectItem>
                   <SelectItem value="true">Active</SelectItem>
                   <SelectItem value="false">Inactive</SelectItem>
                 </SelectContent>
