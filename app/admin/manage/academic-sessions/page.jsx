@@ -44,20 +44,24 @@ export default function AcademicSessionsPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setSessions(data.sessions);
+        // API returns { success: true, data: sessions }, so we need data.data
+        setSessions(data.data || []);
       } else {
         toast({
           title: "Error",
           description: "Failed to fetch academic sessions",
           variant: "destructive"
         });
+        setSessions([]); // Set empty array on error
       }
     } catch (error) {
+      console.error('Error fetching sessions:', error);
       toast({
         title: "Error",
         description: "An error occurred while fetching sessions",
         variant: "destructive"
       });
+      setSessions([]); // Set empty array on error
     } finally {
       setLoading(false);
     }
@@ -89,7 +93,11 @@ export default function AcademicSessionsPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({
+          ...formData,
+          startDate: `${formData.startYear}-01-01`,
+          endDate: `${formData.endYear}-12-31`
+        })
       });
 
       if (response.ok) {
@@ -131,8 +139,8 @@ export default function AcademicSessionsPage() {
     setEditingSession(session);
     setFormData({
       name: session.name,
-      startYear: session.startYear.toString(),
-      endYear: session.endYear.toString(),
+      startYear: session.startDate ? new Date(session.startDate).getFullYear().toString() : '',
+      endYear: session.endDate ? new Date(session.endDate).getFullYear().toString() : '',
       description: session.description || '',
       isActive: session.isActive
     });
@@ -289,7 +297,7 @@ export default function AcademicSessionsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {sessions.length === 0 ? (
+          {!loading && sessions && sessions.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No academic sessions found.</p>
             </div>
@@ -305,10 +313,13 @@ export default function AcademicSessionsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sessions.map((session) => (
+                {sessions && sessions.map((session) => (
                   <TableRow key={session._id}>
                     <TableCell className="font-medium">{session.name}</TableCell>
-                    <TableCell>{session.startYear} - {session.endYear}</TableCell>
+                    <TableCell>{session.startDate && session.endDate ? 
+                      `${new Date(session.startDate).getFullYear()} - ${new Date(session.endDate).getFullYear()}` : 
+                      'N/A'
+                    }</TableCell>
                     <TableCell>
                       <Badge variant={session.isActive ? "default" : "secondary"}>
                         {session.isActive ? "Active" : "Inactive"}
