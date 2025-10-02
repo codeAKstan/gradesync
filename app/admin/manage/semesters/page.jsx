@@ -54,7 +54,7 @@ export default function SemestersPage() {
         const semestersData = await semestersResponse.json();
         const sessionsData = await sessionsResponse.json();
         
-        setSemesters(semestersData.semesters);
+        setSemesters(semestersData.data || []);
         setAcademicSessions(sessionsData.data || []);
       } else {
         toast({
