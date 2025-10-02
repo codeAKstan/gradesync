@@ -59,7 +59,7 @@ export default function CoursesPage() {
         const departmentsData = await departmentsResponse.json();
         const semestersData = await semestersResponse.json();
         
-        setCourses(coursesData.courses);
+        setCourses(coursesData.data);
         setDepartments(departmentsData.data);
         setSemesters(semestersData.data);
       } else {
@@ -109,8 +109,7 @@ export default function CoursesPage() {
         body: JSON.stringify({
           ...formData,
           creditUnits: parseInt(formData.creditUnits),
-          level: parseInt(formData.level),
-          semester: parseInt(formData.semester)
+          level: parseInt(formData.level)
         })
       });
 

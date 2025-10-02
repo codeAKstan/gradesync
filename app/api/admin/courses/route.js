@@ -169,12 +169,12 @@ export async function POST(request) {
       description,
       creditUnits: parseInt(creditUnits),
       level: parseInt(level),
-      semester: parseInt(semester),
-      departmentId,
+      semester: semester,
+      departmentId: new ObjectId(departmentId),
       prerequisites: prerequisites || [],
       isElective: isElective || false,
       isActive: isActive !== undefined ? isActive : true,
-      createdBy: authResult.admin.id
+      createdBy: authResult.adminId
     });
 
     // Validate course data

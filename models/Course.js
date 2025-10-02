@@ -39,8 +39,8 @@ export class Course {
       errors.push('Level must be 100, 200, 300, 400, or 500');
     }
 
-    if (!this.semester || ![1, 2].includes(this.semester)) {
-      errors.push('Semester must be 1 or 2');
+    if (!this.semester) {
+      errors.push('Semester is required');
     }
 
     if (!this.departmentId) {
