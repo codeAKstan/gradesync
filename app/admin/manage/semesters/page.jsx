@@ -246,7 +246,7 @@ export default function SemestersPage() {
                 <Input
                   id="code"
                   value={formData.code}
-                  onChange={(e) => setFormData({...formData, code: e.target.value})}
+                  onChange={(e) => setFormData({...formData, code: e.target.value.toUpperCase()})}
                   placeholder="e.g., SEM1, SEM2"
                   required
                 />
@@ -405,7 +405,7 @@ export default function SemestersPage() {
               <Input
                 id="edit-code"
                 value={formData.code}
-                onChange={(e) => setFormData({...formData, code: e.target.value})}
+                onChange={(e) => setFormData({...formData, code: e.target.value.toUpperCase()})}
                 placeholder="e.g., SEM1, SEM2"
                 required
               />

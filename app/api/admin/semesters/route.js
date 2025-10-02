@@ -104,10 +104,12 @@ export async function POST(request) {
     }
 
     // Check if semester with same code already exists in the same academic session
+    console.log('Checking for existing semester with:', { code, academicSessionId, academicSessionIdType: typeof academicSessionId });
     const existingSemester = await semestersCollection.findOne({ 
       code, 
-      academicSessionId 
+      academicSessionId: new ObjectId(academicSessionId)
     });
+    console.log('Existing semester found:', existingSemester);
     if (existingSemester) {
       return NextResponse.json(
         { 
@@ -121,7 +123,7 @@ export async function POST(request) {
     // If this semester is being set as active, deactivate all other semesters in the same session
     if (isActive) {
       await semestersCollection.updateMany(
-        { academicSessionId, isActive: true },
+        { academicSessionId: new ObjectId(academicSessionId), isActive: true },
         { $set: { isActive: false, updatedAt: new Date() } }
       );
     }
@@ -130,7 +132,7 @@ export async function POST(request) {
     const semester = new Semester({
       name,
       code,
-      academicSessionId,
+      academicSessionId: new ObjectId(academicSessionId),
       startDate: new Date(startDate),
       endDate: new Date(endDate),
       isActive: isActive || false,
