@@ -253,7 +253,7 @@ export default function CourseAssignmentsPage() {
   };
 
   const getAvailableSemesters = (academicSessionId) => {
-    return semesters.filter(semester => 
+    return semesters && semesters.filter(semester => 
       !academicSessionId || semester.academicSession._id === academicSessionId
     );
   };
@@ -307,7 +307,7 @@ export default function CourseAssignmentsPage() {
                     <SelectValue placeholder="Select course" />
                   </SelectTrigger>
                   <SelectContent>
-                    {courses.map((course) => (
+                    {courses && courses.map((course) => (
                       <SelectItem key={course._id} value={course._id}>
                         {course.code} - {course.title}
                       </SelectItem>
@@ -326,10 +326,9 @@ export default function CourseAssignmentsPage() {
                     <SelectValue placeholder="Select lecturer" />
                   </SelectTrigger>
                   <SelectContent>
-                    {lecturers.map((lecturer) => (
+                    {lecturers && lecturers.map((lecturer) => (
                       <SelectItem key={lecturer._id} value={lecturer._id}>
-                        {lecturer.title && `${lecturer.title} `}
-                        {lecturer.firstName} {lecturer.lastName} ({lecturer.staffId})
+                        {lecturer.firstName} {lecturer.lastName}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -346,7 +345,7 @@ export default function CourseAssignmentsPage() {
                     <SelectValue placeholder="Select academic session" />
                   </SelectTrigger>
                   <SelectContent>
-                    {academicSessions.map((session) => (
+                    {academicSessions && academicSessions.map((session) => (
                       <SelectItem key={session._id} value={session._id}>
                         {session.name} ({session.startYear}-{session.endYear})
                       </SelectItem>
@@ -415,13 +414,13 @@ export default function CourseAssignmentsPage() {
                   <SelectValue placeholder="All lecturers" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All lecturers</SelectItem>
-                  {lecturers.map((lecturer) => (
-                    <SelectItem key={lecturer._id} value={lecturer._id}>
-                      {lecturer.firstName} {lecturer.lastName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                    <SelectItem value="">All lecturers</SelectItem>
+                    {lecturers && lecturers.map((lecturer) => (
+                      <SelectItem key={lecturer._id} value={lecturer._id}>
+                        {lecturer.firstName} {lecturer.lastName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
               </Select>
             </div>
 
@@ -435,13 +434,13 @@ export default function CourseAssignmentsPage() {
                   <SelectValue placeholder="All courses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All courses</SelectItem>
-                  {courses.map((course) => (
-                    <SelectItem key={course._id} value={course._id}>
-                      {course.code}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                    <SelectItem value="">All courses</SelectItem>
+                    {courses && courses.map((course) => (
+                      <SelectItem key={course._id} value={course._id}>
+                        {course.code}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
               </Select>
             </div>
 
@@ -455,13 +454,13 @@ export default function CourseAssignmentsPage() {
                   <SelectValue placeholder="All sessions" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All sessions</SelectItem>
-                  {academicSessions.map((session) => (
-                    <SelectItem key={session._id} value={session._id}>
-                      {session.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                    <SelectItem value="">All sessions</SelectItem>
+                    {academicSessions && academicSessions.map((session) => (
+                      <SelectItem key={session._id} value={session._id}>
+                        {session.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
               </Select>
             </div>
 
@@ -475,13 +474,13 @@ export default function CourseAssignmentsPage() {
                   <SelectValue placeholder="All semesters" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All semesters</SelectItem>
-                  {semesters.map((semester) => (
-                    <SelectItem key={semester._id} value={semester._id}>
-                      {semester.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                    <SelectItem value="">All semesters</SelectItem>
+                    {semesters && semesters.map((semester) => (
+                      <SelectItem key={semester._id} value={semester._id}>
+                        {semester.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
               </Select>
             </div>
 
@@ -519,7 +518,7 @@ export default function CourseAssignmentsPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {assignments.length === 0 ? (
+          {!assignments || assignments.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No course assignments found.</p>
             </div>
@@ -617,12 +616,12 @@ export default function CourseAssignmentsPage() {
                   <SelectValue placeholder="Select course" />
                 </SelectTrigger>
                 <SelectContent>
-                  {courses.map((course) => (
-                    <SelectItem key={course._id} value={course._id}>
-                      {course.code} - {course.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                    {courses && courses.map((course) => (
+                      <SelectItem key={course._id} value={course._id}>
+                        {course.code} - {course.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
               </Select>
             </div>
 
@@ -636,13 +635,13 @@ export default function CourseAssignmentsPage() {
                   <SelectValue placeholder="Select lecturer" />
                 </SelectTrigger>
                 <SelectContent>
-                  {lecturers.map((lecturer) => (
-                    <SelectItem key={lecturer._id} value={lecturer._id}>
-                      {lecturer.title && `${lecturer.title} `}
-                      {lecturer.firstName} {lecturer.lastName} ({lecturer.staffId})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                    {lecturers && lecturers.map((lecturer) => (
+                      <SelectItem key={lecturer._id} value={lecturer._id}>
+                        {lecturer.title && `${lecturer.title} `}
+                        {lecturer.firstName} {lecturer.lastName} ({lecturer.staffId})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
               </Select>
             </div>
 
@@ -656,12 +655,12 @@ export default function CourseAssignmentsPage() {
                   <SelectValue placeholder="Select academic session" />
                 </SelectTrigger>
                 <SelectContent>
-                  {academicSessions.map((session) => (
-                    <SelectItem key={session._id} value={session._id}>
-                      {session.name} ({session.startYear}-{session.endYear})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+                    {academicSessions && academicSessions.map((session) => (
+                      <SelectItem key={session._id} value={session._id}>
+                        {session.name} ({session.startYear}-{session.endYear})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
               </Select>
             </div>
 

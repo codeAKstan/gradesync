@@ -352,7 +352,7 @@ export default function CoursesPage() {
                     <SelectValue placeholder="Select department" />
                   </SelectTrigger>
                   <SelectContent>
-                    {departments.map((department) => (
+                    {departments && departments.map((department) => (
                       <SelectItem key={department._id} value={department._id}>
                         {department.name} ({department.code})
                       </SelectItem>
@@ -369,7 +369,7 @@ export default function CoursesPage() {
                       <SelectValue placeholder="Add prerequisite course" />
                     </SelectTrigger>
                     <SelectContent>
-                      {courses
+                      {courses && courses
                         .filter(course => !formData.prerequisites.includes(course._id))
                         .map((course) => (
                           <SelectItem key={course._id} value={course._id}>
@@ -417,7 +417,7 @@ export default function CoursesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {courses.length === 0 ? (
+          {!courses || courses.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No courses found.</p>
             </div>
@@ -604,7 +604,7 @@ export default function CoursesPage() {
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
                 <SelectContent>
-                  {departments.map((department) => (
+                  {departments && departments.map((department) => (
                     <SelectItem key={department._id} value={department._id}>
                       {department.name} ({department.code})
                     </SelectItem>
@@ -621,7 +621,7 @@ export default function CoursesPage() {
                     <SelectValue placeholder="Add prerequisite course" />
                   </SelectTrigger>
                   <SelectContent>
-                    {courses
+                    {courses && courses
                       .filter(course => course._id !== editingCourse?._id && !formData.prerequisites.includes(course._id))
                       .map((course) => (
                         <SelectItem key={course._id} value={course._id}>

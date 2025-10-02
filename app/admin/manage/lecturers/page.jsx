@@ -302,7 +302,7 @@ export default function LecturersPage() {
                     <SelectValue placeholder="Select department" />
                   </SelectTrigger>
                   <SelectContent>
-                    {departments.map((department) => (
+                    {departments && departments.map((department) => (
                       <SelectItem key={department._id} value={department._id}>
                         {department.name} ({department.code})
                       </SelectItem>
@@ -330,7 +330,7 @@ export default function LecturersPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {lecturers.length === 0 ? (
+          {!lecturers || lecturers.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No lecturers found.</p>
             </div>
@@ -476,7 +476,7 @@ export default function LecturersPage() {
                   <SelectValue placeholder="Select department" />
                 </SelectTrigger>
                 <SelectContent>
-                  {departments.map((department) => (
+                  {departments && departments.map((department) => (
                     <SelectItem key={department._id} value={department._id}>
                       {department.name} ({department.code})
                     </SelectItem>
