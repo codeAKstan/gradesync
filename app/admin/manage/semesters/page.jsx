@@ -24,10 +24,12 @@ export default function SemestersPage() {
   const [editingSemester, setEditingSemester] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
+    code: '',
     academicSessionId: '',
     startDate: '',
     endDate: '',
-    isActive: false
+    isActive: false,
+    description: ''
   });
 
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function SemestersPage() {
         const sessionsData = await sessionsResponse.json();
         
         setSemesters(semestersData.semesters);
-        setAcademicSessions(sessionsData.sessions);
+        setAcademicSessions(sessionsData.data || []);
       } else {
         toast({
           title: "Error",
@@ -75,7 +77,7 @@ export default function SemestersPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.academicSessionId || !formData.startDate || !formData.endDate) {
+    if (!formData.name || !formData.code || !formData.academicSessionId || !formData.startDate || !formData.endDate) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -109,10 +111,12 @@ export default function SemestersPage() {
         
         setFormData({
           name: '',
+          code: '',
           academicSessionId: '',
           startDate: '',
           endDate: '',
-          isActive: false
+          isActive: false,
+          description: ''
         });
         
         setIsCreateDialogOpen(false);
@@ -140,10 +144,12 @@ export default function SemestersPage() {
     setEditingSemester(semester);
     setFormData({
       name: semester.name,
+      code: semester.code,
       academicSessionId: semester.academicSession._id,
       startDate: new Date(semester.startDate).toISOString().split('T')[0],
       endDate: new Date(semester.endDate).toISOString().split('T')[0],
-      isActive: semester.isActive
+      isActive: semester.isActive,
+      description: semester.description || ''
     });
     setIsEditDialogOpen(true);
   };
@@ -236,6 +242,17 @@ export default function SemestersPage() {
               </div>
               
               <div>
+                <Label htmlFor="code">Semester Code *</Label>
+                <Input
+                  id="code"
+                  value={formData.code}
+                  onChange={(e) => setFormData({...formData, code: e.target.value})}
+                  placeholder="e.g., SEM1, SEM2"
+                  required
+                />
+              </div>
+              
+              <div>
                 <Label htmlFor="academicSession">Academic Session *</Label>
                 <Select
                   value={formData.academicSessionId}
@@ -245,9 +262,9 @@ export default function SemestersPage() {
                     <SelectValue placeholder="Select academic session" />
                   </SelectTrigger>
                   <SelectContent>
-                    {academicSessions.map((session) => (
+                    {academicSessions && academicSessions.map((session) => (
                       <SelectItem key={session._id} value={session._id}>
-                        {session.name} ({session.startYear}-{session.endYear})
+                        {session.name} ({new Date(session.startDate).getFullYear()}-{new Date(session.endDate).getFullYear()})
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -305,7 +322,7 @@ export default function SemestersPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {semesters.length === 0 ? (
+          {!semesters || semesters.length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground">No semesters found.</p>
             </div>
@@ -321,12 +338,12 @@ export default function SemestersPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {semesters.map((semester) => (
+                {semesters && semesters.map((semester) => (
                   <TableRow key={semester._id}>
                     <TableCell className="font-medium">{semester.name}</TableCell>
                     <TableCell>
                       {semester.academicSession?.name} 
-                      ({semester.academicSession?.startYear}-{semester.academicSession?.endYear})
+                      ({semester.academicSession?.startDate ? new Date(semester.academicSession.startDate).getFullYear() : ''}-{semester.academicSession?.endDate ? new Date(semester.academicSession.endDate).getFullYear() : ''})
                     </TableCell>
                     <TableCell>
                       {new Date(semester.startDate).toLocaleDateString()} - {new Date(semester.endDate).toLocaleDateString()}
@@ -384,6 +401,17 @@ export default function SemestersPage() {
             </div>
             
             <div>
+              <Label htmlFor="edit-code">Semester Code *</Label>
+              <Input
+                id="edit-code"
+                value={formData.code}
+                onChange={(e) => setFormData({...formData, code: e.target.value})}
+                placeholder="e.g., SEM1, SEM2"
+                required
+              />
+            </div>
+            
+            <div>
               <Label htmlFor="edit-academicSession">Academic Session *</Label>
               <Select
                 value={formData.academicSessionId}
@@ -393,9 +421,9 @@ export default function SemestersPage() {
                   <SelectValue placeholder="Select academic session" />
                 </SelectTrigger>
                 <SelectContent>
-                  {academicSessions.map((session) => (
+                  {academicSessions && academicSessions.map((session) => (
                     <SelectItem key={session._id} value={session._id}>
-                      {session.name} ({session.startYear}-{session.endYear})
+                      {session.name} ({new Date(session.startDate).getFullYear()}-{new Date(session.endDate).getFullYear()})
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -135,7 +135,7 @@ export async function POST(request) {
       endDate: new Date(endDate),
       isActive: isActive || false,
       description,
-      createdBy: authResult.admin.id
+      createdBy: authResult.adminId
     });
 
     // Validate semester data
