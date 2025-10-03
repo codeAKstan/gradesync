@@ -37,6 +37,7 @@ export default function CourseAssignmentsPage() {
     lecturerId: '',
     academicSessionId: '',
     semesterId: '',
+    assignmentType: 'primary',
     isActive: true
   });
 
@@ -200,6 +201,7 @@ export default function CourseAssignmentsPage() {
       lecturerId: assignment.lecturer._id,
       academicSessionId: assignment.academicSession._id,
       semesterId: assignment.semester._id,
+      assignmentType: assignment.assignmentType || 'primary',
       isActive: assignment.isActive
     });
     setIsEditDialogOpen(true);
@@ -373,6 +375,23 @@ export default function CourseAssignmentsPage() {
                         {semester.name}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="assignmentType">Assignment Type *</Label>
+                <Select
+                  value={formData.assignmentType}
+                  onValueChange={(value) => setFormData({...formData, assignmentType: value})}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select assignment type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="primary">Primary</SelectItem>
+                    <SelectItem value="secondary">Secondary</SelectItem>
+                    <SelectItem value="assistant">Assistant</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -683,6 +702,23 @@ export default function CourseAssignmentsPage() {
                       {semester.name}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="edit-assignmentType">Assignment Type *</Label>
+              <Select
+                value={formData.assignmentType}
+                onValueChange={(value) => setFormData({...formData, assignmentType: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select assignment type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="primary">Primary</SelectItem>
+                  <SelectItem value="secondary">Secondary</SelectItem>
+                  <SelectItem value="assistant">Assistant</SelectItem>
                 </SelectContent>
               </Select>
             </div>

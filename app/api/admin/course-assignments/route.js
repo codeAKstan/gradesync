@@ -175,12 +175,15 @@ export async function POST(request) {
       isActive 
     } = body;
 
+    console.log('Received request body:', body);
+    console.log('Auth result:', authResult);
+
     const client = await clientPromise;
     const db = client.db('gradesynce');
     const courseAssignmentsCollection = db.collection('courseAssignments');
     const coursesCollection = db.collection('courses');
     const lecturersCollection = db.collection('lecturers');
-    const academicSessionsCollection = db.collection('academic_sessions');
+    const academicSessionsCollection = db.collection('academicSessions');
     const semestersCollection = db.collection('semesters');
 
     // Validate all required IDs
@@ -246,12 +249,21 @@ export async function POST(request) {
 
     // Check for existing assignment (same course, lecturer, academic session, semester)
     const existingAssignment = await courseAssignmentsCollection.findOne({
-      courseId,
-      lecturerId,
-      academicSessionId,
-      semesterId,
+      courseId: new ObjectId(courseId),
+      lecturerId: new ObjectId(lecturerId),
+      academicSessionId: new ObjectId(academicSessionId),
+      semesterId: new ObjectId(semesterId),
       isActive: true
     });
+
+    console.log('Checking for existing assignment with:', {
+      courseId: new ObjectId(courseId),
+      lecturerId: new ObjectId(lecturerId),
+      academicSessionId: new ObjectId(academicSessionId),
+      semesterId: new ObjectId(semesterId),
+      isActive: true
+    });
+    console.log('Existing assignment found:', existingAssignment);
 
     if (existingAssignment) {
       return NextResponse.json(
@@ -265,20 +277,23 @@ export async function POST(request) {
 
     // Create new course assignment
     const courseAssignment = new CourseAssignment({
-      courseId,
-      lecturerId,
-      academicSessionId,
-      semesterId,
+      courseId: new ObjectId(courseId),
+      lecturerId: new ObjectId(lecturerId),
+      academicSessionId: new ObjectId(academicSessionId),
+      semesterId: new ObjectId(semesterId),
       assignmentType: assignmentType || 'primary',
       notes: notes || '',
       isActive: isActive !== undefined ? isActive : true,
-      assignedBy: authResult.admin.id,
+      assignedBy: new ObjectId(authResult.adminId),
       assignedAt: new Date()
     });
 
     // Validate assignment data
     const validation = courseAssignment.validate();
     if (!validation.isValid) {
+      console.error('Course assignment validation failed:', validation.errors);
+      console.error('Course assignment data:', courseAssignment);
+      console.error('Auth result:', authResult);
       return NextResponse.json(
         { success: false, message: 'Validation failed', errors: validation.errors },
         { status: 400 }

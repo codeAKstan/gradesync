@@ -17,29 +17,46 @@ export class CourseAssignment {
   validate() {
     const errors = [];
 
+    console.log('Validating CourseAssignment:', {
+      courseId: this.courseId,
+      lecturerId: this.lecturerId,
+      academicSessionId: this.academicSessionId,
+      semesterId: this.semesterId,
+      assignmentType: this.assignmentType,
+      assignedBy: this.assignedBy
+    });
+
     if (!this.courseId) {
       errors.push('Course ID is required');
+      console.log('Course ID validation failed:', this.courseId);
     }
 
     if (!this.lecturerId) {
       errors.push('Lecturer ID is required');
+      console.log('Lecturer ID validation failed:', this.lecturerId);
     }
 
     if (!this.academicSessionId) {
       errors.push('Academic session ID is required');
+      console.log('Academic session ID validation failed:', this.academicSessionId);
     }
 
     if (!this.semesterId) {
       errors.push('Semester ID is required');
+      console.log('Semester ID validation failed:', this.semesterId);
     }
 
     if (!['primary', 'secondary', 'assistant'].includes(this.assignmentType)) {
       errors.push('Assignment type must be primary, secondary, or assistant');
+      console.log('Assignment type validation failed:', this.assignmentType);
     }
 
     if (!this.assignedBy) {
       errors.push('Assigned by admin ID is required');
+      console.log('Assigned by validation failed:', this.assignedBy);
     }
+
+    console.log('Validation result:', { isValid: errors.length === 0, errors });
 
     return {
       isValid: errors.length === 0,
