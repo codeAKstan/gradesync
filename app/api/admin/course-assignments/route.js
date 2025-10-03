@@ -180,7 +180,7 @@ export async function POST(request) {
     const courseAssignmentsCollection = db.collection('courseAssignments');
     const coursesCollection = db.collection('courses');
     const lecturersCollection = db.collection('lecturers');
-    const academicSessionsCollection = db.collection('academicSessions');
+    const academicSessionsCollection = db.collection('academic_sessions');
     const semestersCollection = db.collection('semesters');
 
     // Validate all required IDs
