@@ -257,7 +257,7 @@ export async function DELETE(request, { params }) {
     const client = await clientPromise;
     const db = client.db('gradesynce');
     const coursesCollection = db.collection('courses');
-    const courseAssignmentsCollection = db.collection('courseAssignments');
+    const courseAssignmentsCollection = db.collection('course_assignments');
 
     // Check if course exists
     const course = await coursesCollection.findOne({ 

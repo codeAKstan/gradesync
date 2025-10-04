@@ -25,7 +25,7 @@ export async function GET(request) {
 
     const client = await clientPromise;
     const db = client.db('gradesynce');
-    const courseAssignmentsCollection = db.collection('courseAssignments');
+    const courseAssignmentsCollection = db.collection('course_assignments');
 
     // Build query filter
     const filter = {};
@@ -90,7 +90,7 @@ export async function GET(request) {
       },
       {
         $lookup: {
-          from: 'academicSessions',
+          from: 'academic_sessions',
           localField: 'academicSessionId',
           foreignField: '_id',
           as: 'academicSession'
@@ -180,10 +180,10 @@ export async function POST(request) {
 
     const client = await clientPromise;
     const db = client.db('gradesynce');
-    const courseAssignmentsCollection = db.collection('courseAssignments');
+    const courseAssignmentsCollection = db.collection('course_assignments');
     const coursesCollection = db.collection('courses');
     const lecturersCollection = db.collection('lecturers');
-    const academicSessionsCollection = db.collection('academicSessions');
+    const academicSessionsCollection = db.collection('academic_sessions');
     const semestersCollection = db.collection('semesters');
 
     // Validate all required IDs
@@ -240,7 +240,7 @@ export async function POST(request) {
     }
 
     // Verify semester belongs to the academic session
-    if (semester.academicSessionId !== academicSessionId) {
+    if (semester.academicSessionId.toString() !== academicSessionId) {
       return NextResponse.json(
         { success: false, message: 'Semester does not belong to the specified academic session' },
         { status: 400 }

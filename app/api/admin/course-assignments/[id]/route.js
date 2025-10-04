@@ -27,7 +27,7 @@ export async function GET(request, { params }) {
 
     const client = await clientPromise;
     const db = client.db('gradesynce');
-    const courseAssignmentsCollection = db.collection('courseAssignments');
+    const courseAssignmentsCollection = db.collection('course_assignments');
 
     // Fetch assignment with related data
     const pipeline = [
@@ -50,7 +50,7 @@ export async function GET(request, { params }) {
       },
       {
         $lookup: {
-          from: 'academicSessions',
+          from: 'academic_sessions',
           localField: 'academicSessionId',
           foreignField: '_id',
           as: 'academicSession'
@@ -153,10 +153,10 @@ export async function PUT(request, { params }) {
 
     const client = await clientPromise;
     const db = client.db('gradesynce');
-    const courseAssignmentsCollection = db.collection('courseAssignments');
+    const courseAssignmentsCollection = db.collection('course_assignments');
     const coursesCollection = db.collection('courses');
     const lecturersCollection = db.collection('lecturers');
-    const academicSessionsCollection = db.collection('academicSessions');
+    const academicSessionsCollection = db.collection('academic_sessions');
     const semestersCollection = db.collection('semesters');
 
     // Check if assignment exists
@@ -313,7 +313,7 @@ export async function DELETE(request, { params }) {
 
     const client = await clientPromise;
     const db = client.db('gradesynce');
-    const courseAssignmentsCollection = db.collection('courseAssignments');
+    const courseAssignmentsCollection = db.collection('course_assignments');
 
     // Check if assignment exists
     const assignment = await courseAssignmentsCollection.findOne({ 
