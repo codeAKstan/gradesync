@@ -113,7 +113,7 @@ export default function CourseAssignmentsPage() {
 
       if (response.ok) {
         const data = await response.json();
-        setAssignments(data.assignments);
+        setAssignments(data.data);
       } else {
         toast({
           title: "Error",
