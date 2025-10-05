@@ -218,6 +218,71 @@ export default function StudentDashboard() {
           </div>
         </div>
 
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <BookOpen className="w-5 h-5 text-blue-600" />
+                <span>Course Registration</span>
+              </CardTitle>
+              <CardDescription>
+                Register for courses and manage your academic schedule
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                onClick={() => router.push('/course-registration')}
+                className="w-full"
+              >
+                Register for Courses
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <GraduationCap className="w-5 h-5 text-green-600" />
+                <span>View Results</span>
+              </CardTitle>
+              <CardDescription>
+                Check your grades and academic performance
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                variant="outline"
+                className="w-full"
+                disabled
+              >
+                Coming Soon
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card className="hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <User className="w-5 h-5 text-purple-600" />
+                <span>Profile</span>
+              </CardTitle>
+              <CardDescription>
+                Update your personal information and settings
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Button 
+                variant="outline"
+                className="w-full"
+                disabled
+              >
+                Coming Soon
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Recent Activity */}
         <Card>
           <CardHeader>
