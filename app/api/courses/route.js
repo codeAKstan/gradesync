@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import clientPromise from '@/lib/mongodb'
 import { Course } from '@/models/Course'
+import { ObjectId } from 'mongodb'
 
 export async function GET(request) {
   try {
@@ -23,11 +24,19 @@ export async function GET(request) {
       filter.level = parseInt(level)
     }
     
+    // Handle semester filtering - find semester ObjectId by name
+    let semesterObjectId = null
     if (semester) {
-      filter.semester = parseInt(semester)
+      const semesterDoc = await db.collection('semesters').findOne({ 
+        name: semester === "First" ? "First Semester" : semester === "Second" ? "Second Semester" : semester 
+      })
+      if (semesterDoc) {
+        semesterObjectId = semesterDoc._id
+        filter.semester = semesterObjectId
+      }
     }
 
-    // Fetch courses with department information
+    // Fetch courses with department and semester information
     const courses = await db.collection('courses')
       .aggregate([
         { $match: filter },
@@ -40,8 +49,45 @@ export async function GET(request) {
           }
         },
         {
+          $lookup: {
+            from: 'semesters',
+            let: { semesterId: '$semester' },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $or: [
+                      // Handle string ObjectIds
+                      {
+                        $and: [
+                          { $eq: [{ $type: '$$semesterId' }, 'string'] },
+                          { $eq: ['$_id', { $toObjectId: '$$semesterId' }] }
+                        ]
+                      },
+                      // Handle numeric semester codes
+                      {
+                        $and: [
+                          { $eq: [{ $type: '$$semesterId' }, 'number'] },
+                          { $eq: ['$code', '$$semesterId'] }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            ],
+            as: 'semesterInfo'
+          }
+        },
+        {
           $unwind: {
             path: '$department',
+            preserveNullAndEmptyArrays: true
+          }
+        },
+        {
+          $unwind: {
+            path: '$semesterInfo',
             preserveNullAndEmptyArrays: true
           }
         },
@@ -57,7 +103,9 @@ export async function GET(request) {
             prerequisites: 1,
             isElective: 1,
             'department.name': 1,
-            'department.code': 1
+            'department.code': 1,
+            'semesterInfo.name': 1,
+            'semesterInfo.code': 1
           }
         },
         { $sort: { code: 1 } }
@@ -72,7 +120,8 @@ export async function GET(request) {
       description: course.description,
       creditUnits: course.creditUnits,
       level: course.level,
-      semester: course.semester,
+      semester: course.semester, // Keep the ObjectId for filtering
+      semesterName: course.semesterInfo ? course.semesterInfo.name : null, // Add readable semester name
       prerequisites: course.prerequisites || [],
       isElective: course.isElective,
       department: course.department ? {
