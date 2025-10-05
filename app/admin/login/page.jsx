@@ -150,17 +150,7 @@ export default function AdminLoginPage() {
               </Button>
             </form>
             
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Need to create an admin account?{" "}
-                <Link 
-                  href="/admin/signup" 
-                  className="text-primary hover:underline font-medium"
-                >
-                  Sign up here
-                </Link>
-              </p>
-            </div>
+           
           </CardContent>
         </Card>
       </main>
