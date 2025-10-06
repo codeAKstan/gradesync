@@ -24,15 +24,22 @@ export async function GET(request) {
       filter.level = parseInt(level)
     }
     
-    // Handle semester filtering - find semester ObjectId by name
+    // Handle semester filtering - find semester ObjectId by name or use string directly
     let semesterObjectId = null
     if (semester) {
-      const semesterDoc = await db.collection('semesters').findOne({ 
-        name: semester === "First" ? "First Semester" : semester === "Second" ? "Second Semester" : semester 
-      })
-      if (semesterDoc) {
-        semesterObjectId = semesterDoc._id
-        filter.semester = semesterObjectId
+      // Check if semester is already an ObjectId string (24 hex characters)
+      if (semester.length === 24 && /^[0-9a-fA-F]{24}$/.test(semester)) {
+        // It's an ObjectId string, use it directly as string (courses store semester as string)
+        filter.semester = semester
+      } else {
+        // It's a name, look it up
+        const semesterDoc = await db.collection('semesters').findOne({ 
+          name: semester === "First" ? "First Semester" : semester === "Second" ? "Second Semester" : semester 
+        })
+        if (semesterDoc) {
+          // Use the ObjectId as string for filtering
+          filter.semester = semesterDoc._id.toString()
+        }
       }
     }
 
