@@ -399,7 +399,7 @@ export default function CoursesPage() {
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline">
-                        {course.semester === 1 ? 'First' : 'Second'} Semester
+                        {course.semesterName || 'Unknown Semester'}
                       </Badge>
                     </TableCell>
                     <TableCell>{course.creditUnits} units</TableCell>

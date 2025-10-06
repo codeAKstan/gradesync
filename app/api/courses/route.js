@@ -57,14 +57,21 @@ export async function GET(request) {
                 $match: {
                   $expr: {
                     $or: [
-                      // Handle string ObjectIds
+                      // Handle string ObjectIds (most common case)
                       {
                         $and: [
                           { $eq: [{ $type: '$$semesterId' }, 'string'] },
                           { $eq: ['$_id', { $toObjectId: '$$semesterId' }] }
                         ]
                       },
-                      // Handle numeric semester codes
+                      // Handle ObjectId type
+                      {
+                        $and: [
+                          { $eq: [{ $type: '$$semesterId' }, 'objectId'] },
+                          { $eq: ['$_id', '$$semesterId'] }
+                        ]
+                      },
+                      // Handle numeric semester codes (legacy support)
                       {
                         $and: [
                           { $eq: [{ $type: '$$semesterId' }, 'number'] },

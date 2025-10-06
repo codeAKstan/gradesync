@@ -43,7 +43,7 @@ export async function GET(request) {
       filter.semester = parseInt(semester);
     }
 
-    // Fetch courses with department details
+    // Fetch courses with department and semester details
     const pipeline = [
       { $match: filter },
       {
@@ -55,9 +55,69 @@ export async function GET(request) {
         }
       },
       {
+        $lookup: {
+          from: 'semesters',
+          let: { semesterId: '$semester' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    // Handle string ObjectIds (most common case)
+                    {
+                      $and: [
+                        { $eq: [{ $type: '$$semesterId' }, 'string'] },
+                        { $eq: ['$_id', { $toObjectId: '$$semesterId' }] }
+                      ]
+                    },
+                    // Handle ObjectId type
+                    {
+                      $and: [
+                        { $eq: [{ $type: '$$semesterId' }, 'objectId'] },
+                        { $eq: ['$_id', '$$semesterId'] }
+                      ]
+                    },
+                    // Handle numeric semester codes (legacy support)
+                    {
+                      $and: [
+                        { $eq: [{ $type: '$$semesterId' }, 'number'] },
+                        { $eq: ['$code', '$$semesterId'] }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'semesterInfo'
+        }
+      },
+      {
         $unwind: {
           path: '$department',
           preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $unwind: {
+          path: '$semesterInfo',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          code: 1,
+          description: 1,
+          creditUnits: 1,
+          level: 1,
+          semester: 1,
+          semesterName: '$semesterInfo.name',
+          departmentId: 1,
+          prerequisites: 1,
+          isElective: 1,
+          department: 1
         }
       },
       { $sort: { level: 1, semester: 1, code: 1 } }
