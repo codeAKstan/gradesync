@@ -131,7 +131,7 @@ export default function CourseRegistrationPage() {
 
   const getTotalCreditUnits = () => {
     return courses
-      .filter(course => selectedCourses.includes(course._id))
+      .filter(course => selectedCourses.includes(course.id))
       .reduce((total, course) => total + course.creditUnits, 0)
   }
 
@@ -288,12 +288,12 @@ export default function CourseRegistrationPage() {
                 </TableHeader>
                 <TableBody>
                   {courses.map((course) => (
-                    <TableRow key={course._id}>
+                    <TableRow key={course.id}>
                       <TableCell>
                         <Checkbox
-                          checked={selectedCourses.includes(course._id)}
+                          checked={selectedCourses.includes(course.id)}
                           onCheckedChange={(checked) => 
-                            handleCourseSelection(course._id, checked)
+                            handleCourseSelection(course.id, checked)
                           }
                         />
                       </TableCell>
@@ -306,7 +306,7 @@ export default function CourseRegistrationPage() {
                         </div>
                       </TableCell>
                       <TableCell>
-                        {course.departmentName || 'N/A'}
+                        {course.department?.name || 'N/A'}
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">{course.creditUnits} units</Badge>
