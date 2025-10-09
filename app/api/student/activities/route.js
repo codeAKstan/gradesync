@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { connectToDatabase } from '@/lib/mongodb';
+import clientPromise from '@/lib/mongodb';
 import { verifyToken } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
 
@@ -16,7 +16,8 @@ export async function GET(request) {
     }
 
     // Connect to database
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db('gradesynce');
     const activitiesCollection = db.collection('studentactivities');
 
     // Get query parameters
@@ -81,7 +82,8 @@ export async function POST(request) {
     }
 
     // Connect to database
-    const { db } = await connectToDatabase();
+    const client = await clientPromise;
+    const db = client.db('gradesynce');
     const activitiesCollection = db.collection('studentactivities');
 
     // Create activity object
