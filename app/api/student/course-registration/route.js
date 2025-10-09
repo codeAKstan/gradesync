@@ -150,10 +150,25 @@ export async function GET(request) {
         }
       },
       {
+        $lookup: {
+          from: 'semesters',
+          localField: 'semesterId',
+          foreignField: '_id',
+          as: 'semester'
+        }
+      },
+      {
+        $unwind: {
+          path: '$semester',
+          preserveNullAndEmptyArrays: true
+        }
+      },
+      {
         $project: {
           _id: 1,
           registrationDate: 1,
           status: 1,
+          grade: 1,
           course: {
             _id: '$course._id',
             title: '$course.title',
@@ -164,6 +179,10 @@ export async function GET(request) {
           department: {
             name: '$department.name',
             code: '$department.code'
+          },
+          semester: {
+            name: '$semester.name',
+            _id: '$semester._id'
           }
         }
       },

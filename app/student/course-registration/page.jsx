@@ -9,7 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Loader2, BookOpen, GraduationCap, Calendar, CheckCircle2, AlertCircle, ArrowLeft, Users, Clock } from "lucide-react"
+import { Loader2, BookOpen, GraduationCap, Calendar, CheckCircle2, AlertCircle, ArrowLeft, Users, Clock, Eye, EyeOff } from "lucide-react"
 
 export default function CourseRegistrationPage() {
   const [loading, setLoading] = useState(false)
@@ -19,6 +19,8 @@ export default function CourseRegistrationPage() {
   const [selectedLevel, setSelectedLevel] = useState("")
   const [selectedSemester, setSelectedSemester] = useState("")
   const [selectedCourses, setSelectedCourses] = useState([])
+  const [registeredCourses, setRegisteredCourses] = useState([])
+  const [showRegisteredCourses, setShowRegisteredCourses] = useState(false)
   const [message, setMessage] = useState({ type: "", text: "" })
   const router = useRouter()
 
@@ -41,6 +43,7 @@ export default function CourseRegistrationPage() {
     
     setAuthenticated(true)
     fetchSemesters()
+    fetchRegisteredCourses()
   }, [router])
 
   // Fetch courses when level and semester are selected
@@ -49,6 +52,28 @@ export default function CourseRegistrationPage() {
       fetchCourses()
     }
   }, [selectedLevel, selectedSemester])
+
+  const fetchRegisteredCourses = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/student/course-registration', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        setRegisteredCourses(data.data || [])
+      } else {
+        console.error('Failed to fetch registered courses:', data.message)
+      }
+    } catch (error) {
+      console.error('Error fetching registered courses:', error)
+    }
+  }
 
   const fetchSemesters = async () => {
     try {
@@ -117,8 +142,9 @@ export default function CourseRegistrationPage() {
       if (data.success) {
         setMessage({ type: "success", text: data.message })
         setSelectedCourses([])
-        // Optionally refresh courses to show updated registration status
+        // Refresh both available courses and registered courses
         fetchCourses()
+        fetchRegisteredCourses()
       } else {
         setMessage({ type: "error", text: data.message || "Registration failed" })
       }
@@ -179,6 +205,111 @@ export default function CourseRegistrationPage() {
           )}
           <AlertDescription>{message.text}</AlertDescription>
         </Alert>
+      )}
+
+      {/* Toggle Button for Registered Courses */}
+      <div className="flex justify-end mb-4">
+        <Button
+          variant="outline"
+          onClick={() => setShowRegisteredCourses(!showRegisteredCourses)}
+          className="flex items-center gap-2"
+        >
+          {showRegisteredCourses ? (
+            <>
+              <EyeOff className="h-4 w-4" />
+              Hide Registered Courses
+            </>
+          ) : (
+            <>
+              <Eye className="h-4 w-4" />
+              View Registered Courses
+            </>
+          )}
+        </Button>
+      </div>
+
+      {/* Registered Courses Section */}
+      {showRegisteredCourses && (
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <BookOpen className="h-5 w-5 mr-2" />
+              Registered Courses
+            </CardTitle>
+            <CardDescription>
+              View your currently registered courses
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {registeredCourses.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                <BookOpen className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p>No registered courses found</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm text-muted-foreground">
+                    Total Registered: {registeredCourses.length} course{registeredCourses.length !== 1 ? 's' : ''}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Total Credit Units: {registeredCourses.reduce((total, course) => total + (course.course?.creditUnits || 0), 0)}
+                  </p>
+                </div>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Course</TableHead>
+                      <TableHead>Department</TableHead>
+                      <TableHead>Credit Units</TableHead>
+                      <TableHead>Semester</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Grade</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {registeredCourses.map((registration) => (
+                      <TableRow key={registration._id}>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium">{registration.course?.title || 'N/A'}</div>
+                            <div className="text-sm text-muted-foreground">{registration.course?.code || 'N/A'}</div>
+                          </div>
+                        </TableCell>
+                        <TableCell>{registration.department?.name || 'N/A'}</TableCell>
+                        <TableCell>
+                          <Badge variant="secondary">
+                            {registration.course?.creditUnits || 0} units
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{registration.semester?.name || 'N/A'}</TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={
+                              registration.status === 'completed' ? 'default' :
+                              registration.status === 'in_progress' ? 'secondary' :
+                              registration.status === 'dropped' ? 'destructive' :
+                              'outline'
+                            }
+                          >
+                            {registration.status || 'N/A'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {registration.grade ? (
+                            <Badge variant="outline">{registration.grade}</Badge>
+                          ) : (
+                            <span className="text-muted-foreground">-</span>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
