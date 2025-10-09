@@ -86,6 +86,28 @@ export async function POST(request) {
     // Insert the registrations
     const result = await db.collection('courseregistrations').insertMany(registrations)
     
+    // Log activity for course registration
+    const activities = courseIds.map(courseId => {
+      const course = courses.find(c => c._id.toString() === courseId)
+      return {
+        studentId: studentId,
+        activityType: 'course_registration',
+        title: 'Course Registration',
+        description: `Registered for ${course.title} (${course.code})`,
+        timestamp: new Date(),
+        metadata: {
+          courseId: new ObjectId(courseId),
+          courseName: course.title,
+          courseCode: course.code,
+          semester: semesterName,
+          level: parseInt(level)
+        }
+      }
+    })
+    
+    // Insert activity logs
+    await db.collection('studentactivities').insertMany(activities)
+    
     return NextResponse.json({
       success: true,
       message: `Successfully registered for ${result.insertedCount} course(s)`,

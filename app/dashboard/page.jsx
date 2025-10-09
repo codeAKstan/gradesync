@@ -20,6 +20,10 @@ import {
 export default function StudentDashboard() {
   const [student, setStudent] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [coursesCount, setCoursesCount] = useState(0)
+  const [coursesLoading, setCoursesLoading] = useState(true)
+  const [activities, setActivities] = useState([])
+  const [activitiesLoading, setActivitiesLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
@@ -37,7 +41,61 @@ export default function StudentDashboard() {
       setStudent(JSON.parse(userData))
     }
     setLoading(false)
+    
+    // Fetch courses count
+    fetchCoursesCount()
+    
+    // Fetch recent activities
+    fetchRecentActivities()
   }, [router])
+
+  const fetchCoursesCount = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/student/course-registration', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        setCoursesCount(data.data?.length || 0)
+      } else {
+        console.error('Failed to fetch courses:', data.message)
+      }
+    } catch (error) {
+      console.error('Error fetching courses:', error)
+    } finally {
+      setCoursesLoading(false)
+    }
+  }
+
+  const fetchRecentActivities = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/student/activities?limit=5', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        setActivities(data.data || [])
+      } else {
+        console.error('Failed to fetch activities:', data.message)
+      }
+    } catch (error) {
+      console.error('Error fetching activities:', error)
+    } finally {
+      setActivitiesLoading(false)
+    }
+  }
 
   const handleLogout = () => {
     localStorage.removeItem('token')
@@ -155,12 +213,19 @@ export default function StudentDashboard() {
                     <BookOpen className="w-5 h-5 text-blue-600" />
                     <span className="text-lg">Courses</span>
                   </div>
-                  <Badge variant="outline">0</Badge>
+                  <Badge variant="outline">
+                    {coursesLoading ? '...' : coursesCount}
+                  </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-gray-600">
-                  No courses enrolled yet
+                  {coursesLoading 
+                    ? 'Loading courses...' 
+                    : coursesCount === 0 
+                      ? 'No courses enrolled yet' 
+                      : `${coursesCount} course${coursesCount !== 1 ? 's' : ''} enrolled`
+                  }
                 </p>
               </CardContent>
             </Card>
@@ -292,13 +357,67 @@ export default function StudentDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="text-center py-8">
-              <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500 mb-2">No recent activity</p>
-              <p className="text-sm text-gray-400">
-                Your academic activities will appear here once you start engaging with courses and assignments.
-              </p>
-            </div>
+            {activitiesLoading ? (
+              <div className="text-center py-8">
+                <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4 animate-pulse" />
+                <p className="text-gray-500">Loading activities...</p>
+              </div>
+            ) : activities.length === 0 ? (
+              <div className="text-center py-8">
+                <Clock className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500 mb-2">No recent activity</p>
+                <p className="text-sm text-gray-400">
+                  Your academic activities will appear here once you start engaging with courses and assignments.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {activities.map((activity, index) => (
+                  <div key={activity._id || index} className="flex items-start space-x-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                    <div className="flex-shrink-0">
+                      {activity.activityType === 'course_registration' && (
+                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                          <BookOpen className="w-4 h-4 text-blue-600" />
+                        </div>
+                      )}
+                      {activity.activityType === 'course_drop' && (
+                        <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                          <BookOpen className="w-4 h-4 text-red-600" />
+                        </div>
+                      )}
+                      {activity.activityType === 'login' && (
+                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                          <User className="w-4 h-4 text-green-600" />
+                        </div>
+                      )}
+                      {activity.activityType === 'profile_update' && (
+                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                          <User className="w-4 h-4 text-purple-600" />
+                        </div>
+                      )}
+                      {!['course_registration', 'course_drop', 'login', 'profile_update'].includes(activity.activityType) && (
+                        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                          <Clock className="w-4 h-4 text-gray-600" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900">{activity.title}</p>
+                      <p className="text-sm text-gray-600">{activity.description}</p>
+                      <p className="text-xs text-gray-400 mt-1">
+                        {new Date(activity.timestamp).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

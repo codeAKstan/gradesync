@@ -68,6 +68,19 @@ export async function POST(request) {
       { $set: { lastLoginAt: new Date(), updatedAt: new Date() } }
     );
 
+    // Log login activity
+    await db.collection('studentactivities').insertOne({
+      studentId: studentData._id,
+      activityType: 'login',
+      title: 'Login',
+      description: 'Successfully logged into the system',
+      timestamp: new Date(),
+      metadata: {
+        email: studentData.email,
+        userAgent: request.headers.get('user-agent') || 'Unknown'
+      }
+    });
+
     // Return success response with token and student data (without password)
     return NextResponse.json({
       success: true,
