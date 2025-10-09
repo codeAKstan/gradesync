@@ -34,14 +34,23 @@ export async function POST(request) {
     const client = await clientPromise
     const db = client.db('gradesynce')
     
+    // Get semester name from semester ID for storage
+    const semesterDoc = await db.collection('semesters').findOne({ _id: new ObjectId(semester) })
+    if (!semesterDoc) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid semester selected' },
+        { status: 400 }
+      )
+    }
+    const semesterName = semesterDoc.name
+    
     // Get student ID from the authenticated token
     const studentId = new ObjectId(authResult.studentId)
     
     // Validate that all courses exist and match the level/semester
     const courses = await db.collection('courses').find({
       _id: { $in: courseIds.map(id => new ObjectId(id)) },
-      level: parseInt(level),
-      semester: semester
+      level: parseInt(level)
     }).toArray()
     
     if (courses.length !== courseIds.length) {
@@ -68,20 +77,14 @@ export async function POST(request) {
     const registrations = courseIds.map(courseId => ({
       studentId: studentId,
       courseId: new ObjectId(courseId),
-      semester: semester,
+      semester: semesterName,
       level: parseInt(level),
       registrationDate: new Date(),
       status: 'active'
     }))
-
-    console.log('DEBUG - About to insert registrations for student:', studentId.toString())
-    console.log('DEBUG - Auth result:', authResult)
-    console.log('DEBUG - Registrations to insert:', JSON.stringify(registrations, null, 2))
     
+    // Insert the registrations
     const result = await db.collection('courseregistrations').insertMany(registrations)
-    
-    console.log('DEBUG - Insert result:', result)
-    console.log('DEBUG - Inserted count:', result.insertedCount)
     
     return NextResponse.json({
       success: true,
@@ -159,14 +162,14 @@ export async function GET(request) {
       {
         $lookup: {
           from: 'semesters',
-          localField: 'semesterId',
-          foreignField: '_id',
-          as: 'semester'
+          localField: 'semester',
+          foreignField: 'name',
+          as: 'semesterInfo'
         }
       },
       {
         $unwind: {
-          path: '$semester',
+          path: '$semesterInfo',
           preserveNullAndEmptyArrays: true
         }
       },
@@ -188,8 +191,8 @@ export async function GET(request) {
             code: '$department.code'
           },
           semester: {
-            name: '$semester.name',
-            _id: '$semester._id'
+            name: '$semesterInfo.name',
+            _id: '$semesterInfo._id'
           }
         }
       },
