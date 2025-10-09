@@ -35,7 +35,7 @@ export async function POST(request) {
     const db = client.db('gradesynce')
     
     // Get student ID from the authenticated token
-    const studentId = new ObjectId(authResult.userId)
+    const studentId = new ObjectId(authResult.studentId)
     
     // Validate that all courses exist and match the level/semester
     const courses = await db.collection('courses').find({
@@ -73,8 +73,15 @@ export async function POST(request) {
       registrationDate: new Date(),
       status: 'active'
     }))
+
+    console.log('DEBUG - About to insert registrations for student:', studentId.toString())
+    console.log('DEBUG - Auth result:', authResult)
+    console.log('DEBUG - Registrations to insert:', JSON.stringify(registrations, null, 2))
     
     const result = await db.collection('courseregistrations').insertMany(registrations)
+    
+    console.log('DEBUG - Insert result:', result)
+    console.log('DEBUG - Inserted count:', result.insertedCount)
     
     return NextResponse.json({
       success: true,
@@ -116,7 +123,7 @@ export async function GET(request) {
     const db = client.db('gradesynce')
     
     // Build query filter - use authenticated student ID
-    const filter = { studentId: new ObjectId(authResult.userId) }
+    const filter = { studentId: new ObjectId(authResult.studentId) }
     if (semester) {
       filter.semester = semester
     }
