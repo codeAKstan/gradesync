@@ -152,7 +152,7 @@ export default function LecturerDashboard() {
                 <Button 
                   variant="outline" 
                   className="h-20 flex flex-col items-center justify-center space-y-2"
-                  disabled
+                  onClick={() => router.push('/lecturer/my-courses')}
                 >
                   <BookOpen className="h-6 w-6" />
                   <span className="text-xs">My Courses</span>
@@ -160,7 +160,7 @@ export default function LecturerDashboard() {
                 <Button 
                   variant="outline" 
                   className="h-20 flex flex-col items-center justify-center space-y-2"
-                  disabled
+                  onClick={() => router.push('/lecturer/students')}
                 >
                   <Users className="h-6 w-6" />
                   <span className="text-xs">Students</span>
