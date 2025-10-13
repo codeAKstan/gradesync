@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Users, ArrowLeft } from "lucide-react"
+import { Users, ArrowLeft, Download, Upload } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Alert } from "@/components/ui/alert"
 
 export default function LecturerStudentsPage() {
   const router = useRouter()
@@ -21,6 +23,9 @@ export default function LecturerStudentsPage() {
   const [semesterId, setSemesterId] = useState(initialSemesterId || '')
   const [students, setStudents] = useState([])
   const [error, setError] = useState(null)
+  const [uploadOpen, setUploadOpen] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const [uploadResult, setUploadResult] = useState(null)
 
   const token = useMemo(() => {
     return typeof window !== 'undefined' ? localStorage.getItem('lecturerToken') : null
@@ -90,6 +95,42 @@ export default function LecturerStudentsPage() {
             <ArrowLeft className="h-4 w-4" />
           </Button>
           <h1 className="text-2xl font-bold">Students</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            disabled={!courseId || !availableSemesters?.length}
+            onClick={async () => {
+              if (!token || !courseId) return
+              const semId = semesterId || availableSemesters[0]?._id
+              const qs = new URLSearchParams()
+              qs.set('courseId', courseId)
+              if (semId) qs.set('semesterId', semId)
+              const res = await fetch(`/api/lecturer/scores/template?${qs.toString()}`, {
+                headers: { Authorization: `Bearer ${token}` }
+              })
+              if (!res.ok) {
+                const data = await res.json().catch(() => ({}))
+                setError(data.message || 'Failed to download template')
+                return
+              }
+              const blob = await res.blob()
+              const url = window.URL.createObjectURL(blob)
+              const a = document.createElement('a')
+              a.href = url
+              a.download = `scores_template.csv`
+              a.click()
+              window.URL.revokeObjectURL(url)
+            }}
+          >
+            <Download className="h-4 w-4 mr-2" /> Download CSV Template
+          </Button>
+          <Button
+            onClick={() => setUploadOpen(true)}
+            disabled={!courseId || !availableSemesters?.length}
+          >
+            <Upload className="h-4 w-4 mr-2" /> Upload CSV Scores
+          </Button>
         </div>
       </div>
 
@@ -189,6 +230,86 @@ export default function LecturerStudentsPage() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Upload CSV Scores</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Upload the completed CSV template with scores for course and semester.
+            </p>
+            <input
+              type="file"
+              accept=".csv,text/csv"
+              onChange={async (e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                setUploading(true)
+                setUploadResult(null)
+                try {
+                  const text = await file.text()
+                  const semId = semesterId || availableSemesters[0]?._id
+                  const qs = new URLSearchParams()
+                  qs.set('courseId', courseId)
+                  if (semId) qs.set('semesterId', semId)
+                  const res = await fetch(`/api/lecturer/scores/upload?${qs.toString()}`, {
+                    method: 'POST',
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                      'Content-Type': 'text/csv'
+                    },
+                    body: text
+                  })
+                  const data = await res.json()
+                  setUploadResult({ ok: res.ok, data })
+                  if (res.ok) {
+                    // Refresh students to reflect grades
+                    const qs2 = new URLSearchParams()
+                    qs2.set('courseId', courseId)
+                    if (semesterId) qs2.set('semesterId', semesterId)
+                    const res2 = await fetch(`/api/lecturer/course-students?${qs2.toString()}`, {
+                      headers: { Authorization: `Bearer ${token}` }
+                    })
+                    const data2 = await res2.json()
+                    if (res2.ok && data2.success) {
+                      setStudents(data2.data || [])
+                    }
+                  }
+                } catch (err) {
+                  setUploadResult({ ok: false, data: { message: 'Upload failed' } })
+                } finally {
+                  setUploading(false)
+                }
+              }}
+            />
+
+            {uploading && (
+              <div className="text-sm">Uploading and validating...</div>
+            )}
+
+            {uploadResult && !uploadResult.ok && (
+              <div className="text-sm text-red-600">
+                {uploadResult.data?.message || 'Validation failed'}
+                {Array.isArray(uploadResult.data?.errors) && uploadResult.data.errors.length > 0 && (
+                  <div className="mt-2 max-h-40 overflow-auto border rounded p-2 text-xs">
+                    {uploadResult.data.errors.map((err, i) => (
+                      <div key={i}>{`Row ${err.row}: [${err.field}] ${err.message}`}</div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {uploadResult && uploadResult.ok && (
+              <div className="text-sm text-green-700">
+                {uploadResult.data?.message || 'Scores imported successfully'}
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
