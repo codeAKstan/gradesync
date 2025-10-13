@@ -8,6 +8,11 @@ export class CourseRegistration {
     this.status = data.status || 'registered'; // registered, dropped, completed
     this.grade = data.grade || null; // Will be set later by lecturers
     this.gradePoint = data.gradePoint || null;
+    // Approval workflow fields
+    this.approvalStatus = data.approvalStatus || 'pending'; // pending, approved, rejected
+    this.isPublished = data.isPublished !== undefined ? data.isPublished : false;
+    this.approvedBy = data.approvedBy || null; // Admin ID
+    this.approvedAt = data.approvedAt || null;
     this.createdAt = data.createdAt || new Date();
     this.updatedAt = data.updatedAt || new Date();
   }
@@ -53,6 +58,10 @@ export class CourseRegistration {
       status: this.status,
       grade: this.grade,
       gradePoint: this.gradePoint,
+      approvalStatus: this.approvalStatus,
+      isPublished: this.isPublished,
+      approvedBy: this.approvedBy,
+      approvedAt: this.approvedAt,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt
     };

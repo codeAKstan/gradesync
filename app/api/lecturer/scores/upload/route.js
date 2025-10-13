@@ -154,7 +154,18 @@ export async function POST(request) {
       const bulkOps = updates.map(u => ({
         updateOne: {
           filter: { _id: u._id },
-          update: { $set: { grade: u.update.grade, gradePoint: u.update.gradePoint, updatedAt: new Date(), status: 'completed' } }
+          update: {
+            $set: {
+              grade: u.update.grade,
+              gradePoint: u.update.gradePoint,
+              updatedAt: new Date(),
+              status: 'completed',
+              approvalStatus: 'pending',
+              isPublished: false,
+              approvedBy: null,
+              approvedAt: null
+            }
+          }
         }
       }))
       await db.collection('courseregistrations').bulkWrite(bulkOps)

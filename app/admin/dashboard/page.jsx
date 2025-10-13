@@ -282,16 +282,18 @@ export default function AdminDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="w-5 h-5" />
-                Reports & Analytics
+                Results  Approval
               </CardTitle>
               <CardDescription>
-                Generate reports and view system analytics.
+                View and approve results.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" disabled>
-                View Reports (Coming Soon)
-              </Button>
+              <Link href="/admin/manage/results">
+                <Button className="w-full">
+                  View Results
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 

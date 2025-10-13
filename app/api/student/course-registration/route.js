@@ -200,7 +200,9 @@ export async function GET(request) {
           _id: 1,
           registrationDate: 1,
           status: 1,
-          grade: 1,
+          grade: {
+            $cond: [{ $eq: ['$isPublished', true] }, '$grade', null]
+          },
           course: {
             _id: '$course._id',
             title: '$course.title',
