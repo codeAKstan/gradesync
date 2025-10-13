@@ -24,6 +24,9 @@ export default function StudentDashboard() {
   const [coursesLoading, setCoursesLoading] = useState(true)
   const [activities, setActivities] = useState([])
   const [activitiesLoading, setActivitiesLoading] = useState(true)
+  const [gpa, setGpa] = useState(null)
+  const [cgpa, setCgpa] = useState(null)
+  const [gpaLoading, setGpaLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
@@ -47,6 +50,9 @@ export default function StudentDashboard() {
     
     // Fetch recent activities
     fetchRecentActivities()
+
+    // Fetch latest GPA/CGPA summary
+    fetchLatestGPA()
   }, [router])
 
   const fetchCoursesCount = async () => {
@@ -94,6 +100,34 @@ export default function StudentDashboard() {
       console.error('Error fetching activities:', error)
     } finally {
       setActivitiesLoading(false)
+    }
+  }
+
+  const fetchLatestGPA = async () => {
+    try {
+      const token = localStorage.getItem('token')
+      const response = await fetch('/api/student/results?latest=true', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      const data = await response.json()
+      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+        const summary = data.data[0]?.summary || {}
+        setGpa(typeof summary.gpa === 'number' ? summary.gpa : null)
+        setCgpa(typeof summary.cgpa === 'number' ? summary.cgpa : null)
+      } else {
+        setGpa(null)
+        setCgpa(null)
+      }
+    } catch (error) {
+      console.error('Error fetching GPA:', error)
+      setGpa(null)
+      setCgpa(null)
+    } finally {
+      setGpaLoading(false)
     }
   }
 
@@ -254,13 +288,24 @@ export default function StudentDashboard() {
                     <Clock className="w-5 h-5 text-orange-600" />
                     <span className="text-lg">GPA</span>
                   </div>
-                  <Badge variant="outline">N/A</Badge>
+                  <Badge variant="outline">
+                    {gpaLoading ? '...' : (gpa !== null ? Number(gpa).toFixed(2) : 'N/A')}
+                  </Badge>
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-sm text-gray-600">
-                  No grades available yet
-                </p>
+                {gpaLoading ? (
+                  <p className="text-sm text-gray-600">Loading GPA...</p>
+                ) : gpa === null ? (
+                  <p className="text-sm text-gray-600">No grades available yet</p>
+                ) : (
+                  <div className="text-sm text-gray-600">
+                    <p>Latest semester GPA</p>
+                    {cgpa !== null && (
+                      <p className="text-xs text-gray-500 mt-1">CGPA: {Number(cgpa).toFixed(2)}</p>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -317,11 +362,10 @@ export default function StudentDashboard() {
             </CardHeader>
             <CardContent>
               <Button 
-                variant="outline"
                 className="w-full"
-                disabled
+                onClick={() => router.push('/student/results')}
               >
-                Coming Soon
+                View Results
               </Button>
             </CardContent>
           </Card>
