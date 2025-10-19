@@ -120,4 +120,4 @@ If you need help running the project, share the `pnpm dev` (or `npm run dev`) ou
 
 ---
 
-Generated README for the GradeSync project.
+
