@@ -10,6 +10,7 @@ import { GraduationCap, Shield, Users, BookOpen, BarChart3, Settings, LogOut } f
 export default function AdminDashboard() {
   const [adminData, setAdminData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState({ students: 0, courses: 0, gradeReports: 0 })
   const router = useRouter()
 
   useEffect(() => {
@@ -31,6 +32,32 @@ export default function AdminDashboard() {
     }
     
     setLoading(false)
+  }, [router])
+
+  useEffect(() => {
+    // After auth is set, fetch stats
+    const token = localStorage.getItem('adminToken')
+    if (!token) return
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('/api/admin/stats', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+        if (!res.ok) {
+          console.error('Failed to fetch admin stats', await res.text())
+          return
+        }
+        const data = await res.json()
+        if (data?.success && data?.data) {
+          setStats(data.data)
+        }
+      } catch (err) {
+        console.error('Error fetching admin stats:', err)
+      }
+    }
+    fetchStats()
   }, [router])
 
   const handleLogout = () => {
@@ -101,9 +128,9 @@ export default function AdminDashboard() {
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">{stats.students}</div>
               <p className="text-xs text-muted-foreground">
-                No students registered yet
+                {stats.students === 0 ? 'No students registered yet' : 'Students registered'}
               </p>
             </CardContent>
           </Card>
@@ -114,9 +141,9 @@ export default function AdminDashboard() {
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">{stats.courses}</div>
               <p className="text-xs text-muted-foreground">
-                No courses created yet
+                {stats.courses === 0 ? 'No courses created yet' : 'Courses available'}
               </p>
             </CardContent>
           </Card>
@@ -127,9 +154,9 @@ export default function AdminDashboard() {
               <BarChart3 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">0</div>
+              <div className="text-2xl font-bold">{stats.gradeReports}</div>
               <p className="text-xs text-muted-foreground">
-                No reports generated yet
+                {stats.gradeReports === 0 ? 'No reports generated yet' : 'Reports generated'}
               </p>
             </CardContent>
           </Card>

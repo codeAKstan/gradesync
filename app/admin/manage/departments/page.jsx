@@ -22,8 +22,7 @@ export default function DepartmentsPage() {
   const [formData, setFormData] = useState({
     name: '',
     code: '',
-    description: '',
-    headOfDepartment: ''
+    description: ''
   });
 
   useEffect(() => {
@@ -102,8 +101,7 @@ export default function DepartmentsPage() {
         setFormData({
           name: '',
           code: '',
-          description: '',
-          headOfDepartment: ''
+          description: ''
         });
         
         setIsCreateDialogOpen(false);
@@ -132,8 +130,7 @@ export default function DepartmentsPage() {
     setFormData({
       name: department.name,
       code: department.code,
-      description: department.description || '',
-      headOfDepartment: department.headOfDepartment || ''
+      description: department.description || ''
     });
     setIsEditDialogOpen(true);
   };
@@ -237,13 +234,7 @@ export default function DepartmentsPage() {
               </div>
 
               <div>
-                <Label htmlFor="headOfDepartment">Head of Department</Label>
-                <Input
-                  id="headOfDepartment"
-                  value={formData.headOfDepartment}
-                  onChange={(e) => setFormData({...formData, headOfDepartment: e.target.value})}
-                  placeholder="e.g., Dr. John Smith"
-                />
+                {/* Head of Department field removed as requested */}
               </div>
 
               <div>
@@ -285,7 +276,7 @@ export default function DepartmentsPage() {
                 <TableRow>
                   <TableHead>Department Name</TableHead>
                   <TableHead>Code</TableHead>
-                  <TableHead>Head of Department</TableHead>
+                  {/* <TableHead>Head of Department</TableHead> */}
                   <TableHead>Description</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -299,7 +290,7 @@ export default function DepartmentsPage() {
                         {department.code}
                       </span>
                     </TableCell>
-                    <TableCell>{department.headOfDepartment || "Not assigned"}</TableCell>
+                    {/* <TableCell>{department.headOfDepartment || "Not assigned"}</TableCell> */}
                     <TableCell>{department.description || "No description"}</TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
@@ -360,13 +351,7 @@ export default function DepartmentsPage() {
             </div>
 
             <div>
-              <Label htmlFor="edit-headOfDepartment">Head of Department</Label>
-              <Input
-                id="edit-headOfDepartment"
-                value={formData.headOfDepartment}
-                onChange={(e) => setFormData({...formData, headOfDepartment: e.target.value})}
-                placeholder="e.g., Dr. John Smith"
-              />
+              {/* Head of Department field removed in edit form as requested */}
             </div>
 
             <div>
