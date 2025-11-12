@@ -73,12 +73,13 @@ export async function GET(request) {
 
     const regs = await db.collection('courseregistrations').aggregate(pipeline).toArray()
 
-    // Build CSV content
-    const header = 'CourseCode,MatricNumber,StudentName,Score\n'
+    // Build CSV content with separate CA and Exam columns
+    const header = 'CourseCode,MatricNumber,StudentName,CA,Exam\n'
     const rows = regs.map(r => {
       const name = (r.studentName || '').replace(/\r|\n/g, ' ').trim()
       const matric = (r.matricNumber || '').trim()
-      return `${courseDoc.code},${matric},${name},`
+      // Leave CA and Exam empty for lecturers to fill
+      return `${courseDoc.code},${matric},${name},,`
     })
     const csv = header + rows.join('\n') + (rows.length ? '\n' : '')
 

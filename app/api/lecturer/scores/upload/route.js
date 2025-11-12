@@ -66,7 +66,7 @@ export async function POST(request) {
     }
 
     const { header, rows } = parseCsv(bodyText)
-    const expectedHeader = ['CourseCode', 'MatricNumber', 'StudentName', 'Score']
+    const expectedHeader = ['CourseCode', 'MatricNumber', 'StudentName', 'CA', 'Exam']
     const headerMismatch = expectedHeader.some((h, i) => (header[i] || '').toLowerCase() !== h.toLowerCase())
     if (headerMismatch) {
       return NextResponse.json({ success: false, message: 'Invalid CSV header format' }, { status: 400 })
@@ -101,7 +101,7 @@ export async function POST(request) {
     // Validate each row
     rows.forEach((cols, idx) => {
       const rowNumber = idx + 2 // account for header line
-      const [code, matricNumber, studentName, scoreStr] = cols
+      const [code, matricNumber, studentName, caStr, examStr] = cols
       const rowErrors = []
 
       // Validate course code
@@ -127,15 +127,21 @@ export async function POST(request) {
         rowErrors.push({ row: rowNumber, field: 'MatricNumber', message: 'Matric not registered for this course/semester' })
       }
 
-      const scoreNum = Number(scoreStr)
-      if (Number.isNaN(scoreNum) || scoreNum < 0 || scoreNum > 100) {
-        rowErrors.push({ row: rowNumber, field: 'Score', message: 'Score must be a number between 0 and 100' })
+      // Validate CA and Exam
+      const caNum = Number(caStr)
+      const examNum = Number(examStr)
+      if (Number.isNaN(caNum) || caNum < 0 || caNum > 30) {
+        rowErrors.push({ row: rowNumber, field: 'CA', message: 'CA must be a number between 0 and 30' })
+      }
+      if (Number.isNaN(examNum) || examNum < 0 || examNum > 70) {
+        rowErrors.push({ row: rowNumber, field: 'Exam', message: 'Exam must be a number between 0 and 70' })
       }
 
       if (rowErrors.length === 0) {
-        const { grade, gradePoint } = mapScoreToGrade(scoreNum)
+        const totalScore = caNum + examNum
+        const { grade, gradePoint } = mapScoreToGrade(totalScore)
         if (grade === null) {
-          rowErrors.push({ row: rowNumber, field: 'Score', message: 'Unable to map score to grade' })
+          rowErrors.push({ row: rowNumber, field: 'Total', message: 'Unable to map CA+Exam to grade' })
         } else if (reg) {
           updates.push({ _id: reg._id, update: { grade, gradePoint } })
         }
