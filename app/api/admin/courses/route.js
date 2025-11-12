@@ -47,10 +47,21 @@ export async function GET(request) {
     // Fetch courses with department and semester details
     const pipeline = [
       { $match: filter },
+      // Safely convert potential string IDs to ObjectId; avoid conversion errors
+      {
+        $addFields: {
+          departmentObjId: {
+            $convert: { input: '$departmentId', to: 'objectId', onError: null, onNull: null }
+          },
+          semesterObjId: {
+            $convert: { input: '$semester', to: 'objectId', onError: null, onNull: null }
+          }
+        }
+      },
       {
         $lookup: {
           from: 'departments',
-          localField: 'departmentId',
+          localField: 'departmentObjId',
           foreignField: '_id',
           as: 'department'
         }
@@ -58,33 +69,16 @@ export async function GET(request) {
       {
         $lookup: {
           from: 'semesters',
-          let: { semesterId: '$semester' },
+          let: { semIdObj: '$semesterObjId', semRaw: '$semester' },
           pipeline: [
             {
               $match: {
                 $expr: {
                   $or: [
-                    // Handle string ObjectIds (most common case)
-                    {
-                      $and: [
-                        { $eq: [{ $type: '$$semesterId' }, 'string'] },
-                        { $eq: ['$_id', { $toObjectId: '$$semesterId' }] }
-                      ]
-                    },
-                    // Handle ObjectId type
-                    {
-                      $and: [
-                        { $eq: [{ $type: '$$semesterId' }, 'objectId'] },
-                        { $eq: ['$_id', '$$semesterId'] }
-                      ]
-                    },
-                    // Handle numeric semester codes (legacy support)
-                    {
-                      $and: [
-                        { $eq: [{ $type: '$$semesterId' }, 'number'] },
-                        { $eq: ['$code', '$$semesterId'] }
-                      ]
-                    }
+                    // If we have a valid ObjectId conversion, match by _id
+                    { $and: [ { $ne: ['$$semIdObj', null] }, { $eq: ['$_id', '$$semIdObj'] } ] },
+                    // Fallback: if course.semester is numeric, match by numeric code
+                    { $and: [ { $eq: [ { $type: '$$semRaw' }, 'number' ] }, { $eq: ['$code', '$$semRaw'] } ] }
                   ]
                 }
               }
