@@ -318,7 +318,7 @@ export default function CoursesPage() {
                     <SelectContent>
                       {semesters && semesters.map((semester) => (
                         <SelectItem key={semester._id} value={semester._id}>
-                          {semester.name} - {semester.academicSession.name}
+                          {semester.name} - {semester.academicSession?.name || 'Unknown Session'}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -515,11 +515,11 @@ export default function CoursesPage() {
                     <SelectValue placeholder="Select semester" />
                   </SelectTrigger>
                   <SelectContent>
-                    {semesters && semesters.map((semester) => (
-                      <SelectItem key={semester._id} value={semester._id}>
-                        {semester.name} - {semester.academicSession.name}
-                      </SelectItem>
-                    ))}
+                      {semesters && semesters.map((semester) => (
+                        <SelectItem key={semester._id} value={semester._id}>
+                          {semester.name} - {semester.academicSession?.name || 'Unknown Session'}
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
