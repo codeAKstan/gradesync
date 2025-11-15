@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { Loader2, GraduationCap, BookOpen } from 'lucide-react'
+import { Loader2, GraduationCap, BookOpen, Download } from 'lucide-react'
 
 export default function StudentResultsPage() {
   const router = useRouter()
@@ -15,6 +15,74 @@ export default function StudentResultsPage() {
   const [semesters, setSemesters] = useState([])
   const [selectedSemester, setSelectedSemester] = useState('')
   const [results, setResults] = useState([])
+  function downloadSemesterPDF(semResult) {
+    try {
+      const semester = semResult?.semester || 'Results'
+      const summary = semResult?.summary || {}
+      const courses = Array.isArray(semResult?.courses) ? semResult.courses : []
+
+      const html = `
+        <html>
+          <head>
+            <meta charset="utf-8" />
+            <title>GradeSync - ${semester} Results</title>
+            <style>
+              body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; color: #111827; padding: 24px; }
+              h1 { font-size: 20px; margin: 0 0 4px; }
+              .muted { color: #6b7280; font-size: 12px; margin-bottom: 16px; }
+              .summary { margin: 16px 0; }
+              .summary span { display: inline-block; margin-right: 16px; }
+              table { border-collapse: collapse; width: 100%; margin-top: 8px; }
+              th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; font-size: 12px; }
+              th { background: #f9fafb; }
+            </style>
+          </head>
+          <body>
+            <h1>GradeSync - ${semester} Results</h1>
+            <div class="muted">Generated ${new Date().toLocaleString()}</div>
+            <div class="summary">
+              <span><strong>GPA:</strong> ${summary.gpa ?? 'N/A'}</span>
+              <span><strong>CGPA:</strong> ${summary.cgpa ?? 'N/A'}</span>
+              <span><strong>Total Units:</strong> ${summary.totalUnits ?? 0}</span>
+              ${summary.computedAt ? `<span><strong>Computed:</strong> ${new Date(summary.computedAt).toLocaleString()}</span>` : ''}
+            </div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Course</th>
+                  <th>Code</th>
+                  <th>Units</th>
+                  <th>Status</th>
+                  <th>Grade</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${courses.map(c => `
+                  <tr>
+                    <td>${c?.course?.title ?? ''}</td>
+                    <td>${c?.course?.code ?? ''}</td>
+                    <td>${c?.course?.creditUnits ?? ''}</td>
+                    <td>${(c?.status ?? 'registered')}</td>
+                    <td>${c?.grade ?? 'Pending'}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </body>
+        </html>
+      `
+
+      const w = window.open('', '_blank')
+      if (!w) return
+      w.document.write(html)
+      w.document.close()
+      w.focus()
+      // Trigger print dialog so user can "Save as PDF"
+      w.print()
+    } catch (e) {
+      console.error('Failed to generate PDF:', e)
+    }
+  }
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
@@ -116,7 +184,12 @@ export default function StudentResultsPage() {
             <CardHeader>
               <CardTitle className="flex items-center justify-between">
                 <span>{r.semester}</span>
-                <span className="text-sm text-muted-foreground">Computed: {r.summary?.computedAt ? new Date(r.summary.computedAt).toLocaleString() : 'N/A'}</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-sm text-muted-foreground">Computed: {r.summary?.computedAt ? new Date(r.summary.computedAt).toLocaleString() : 'N/A'}</span>
+                  <Button variant="outline" size="sm" onClick={() => downloadSemesterPDF(r)}>
+                    <Download className="w-4 h-4 mr-2" /> Download PDF
+                  </Button>
+                </div>
               </CardTitle>
               <CardDescription>
                 GPA: <span className="font-semibold">{r.summary?.gpa ?? 'N/A'}</span> · CGPA: <span className="font-semibold">{r.summary?.cgpa ?? 'N/A'}</span> · Units: {r.summary?.totalUnits ?? 0}
