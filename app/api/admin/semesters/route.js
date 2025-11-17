@@ -23,19 +23,26 @@ export async function GET(request) {
     const db = client.db('gradesynce');
     const semestersCollection = db.collection('semesters');
 
-    // Build query filter
-    const filter = {};
-    if (academicSessionId) {
-      filter.academicSessionId = academicSessionId;
-    }
-
-    // Fetch semesters with academic session details
     const pipeline = [
-      { $match: filter },
+      {
+        $addFields: {
+          academicSessionIdObj: {
+            $convert: {
+              input: '$academicSessionId',
+              to: 'objectId',
+              onError: '$academicSessionId',
+              onNull: '$academicSessionId'
+            }
+          }
+        }
+      },
+      ...(academicSessionId
+        ? [{ $match: { academicSessionIdObj: new ObjectId(academicSessionId) } }]
+        : []),
       {
         $lookup: {
           from: 'academic_sessions',
-          localField: 'academicSessionId',
+          localField: 'academicSessionIdObj',
           foreignField: '_id',
           as: 'academicSession'
         }

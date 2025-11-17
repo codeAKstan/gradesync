@@ -29,13 +29,24 @@ export async function GET(request, { params }) {
     const db = client.db('gradesynce');
     const semestersCollection = db.collection('semesters');
 
-    // Fetch semester with academic session details
     const pipeline = [
       { $match: { _id: new ObjectId(id) } },
       {
+        $addFields: {
+          academicSessionIdObj: {
+            $convert: {
+              input: '$academicSessionId',
+              to: 'objectId',
+              onError: '$academicSessionId',
+              onNull: '$academicSessionId'
+            }
+          }
+        }
+      },
+      {
         $lookup: {
           from: 'academic_sessions',
-          localField: 'academicSessionId',
+          localField: 'academicSessionIdObj',
           foreignField: '_id',
           as: 'academicSession'
         }
@@ -109,8 +120,12 @@ export async function PUT(request, { params }) {
       );
     }
 
-    // Verify academic session exists if being updated
-    if (academicSessionId && academicSessionId !== existingSemester.academicSessionId) {
+    // Normalize IDs for comparison
+    const existingSessionIdStr = existingSemester.academicSessionId?.toString();
+    const incomingSessionIdStr = academicSessionId ? new ObjectId(academicSessionId).toString() : existingSessionIdStr;
+
+    // Verify academic session exists if being updated and changed
+    if (academicSessionId) {
       if (!ObjectId.isValid(academicSessionId)) {
         return NextResponse.json(
           { success: false, message: 'Invalid academic session ID' },
@@ -118,22 +133,24 @@ export async function PUT(request, { params }) {
         );
       }
 
-      const academicSession = await sessionsCollection.findOne({ 
-        _id: new ObjectId(academicSessionId) 
-      });
-      if (!academicSession) {
-        return NextResponse.json(
-          { success: false, message: 'Academic session not found' },
-          { status: 404 }
-        );
+      if (incomingSessionIdStr !== existingSessionIdStr) {
+        const academicSession = await sessionsCollection.findOne({ 
+          _id: new ObjectId(academicSessionId) 
+        });
+        if (!academicSession) {
+          return NextResponse.json(
+            { success: false, message: 'Academic session not found' },
+            { status: 404 }
+          );
+        }
       }
     }
 
     // Check if another semester with same code exists in the same session (excluding current semester)
-    if (code && (code !== existingSemester.code || academicSessionId !== existingSemester.academicSessionId)) {
+    if (code && (code !== existingSemester.code || incomingSessionIdStr !== existingSessionIdStr)) {
       const duplicateSemester = await semestersCollection.findOne({ 
         code, 
-        academicSessionId: academicSessionId || existingSemester.academicSessionId,
+        academicSessionId: academicSessionId ? new ObjectId(academicSessionId) : existingSemester.academicSessionId,
         _id: { $ne: new ObjectId(id) } 
       });
       if (duplicateSemester) {
@@ -151,7 +168,7 @@ export async function PUT(request, { params }) {
     if (isActive && !existingSemester.isActive) {
       await semestersCollection.updateMany(
         { 
-          academicSessionId: academicSessionId || existingSemester.academicSessionId,
+          academicSessionId: academicSessionId ? new ObjectId(academicSessionId) : existingSemester.academicSessionId,
           _id: { $ne: new ObjectId(id) },
           isActive: true 
         },
@@ -164,7 +181,7 @@ export async function PUT(request, { params }) {
       ...existingSemester,
       name: name || existingSemester.name,
       code: code || existingSemester.code,
-      academicSessionId: academicSessionId || existingSemester.academicSessionId,
+      academicSessionId: academicSessionId ? new ObjectId(academicSessionId) : existingSemester.academicSessionId,
       startDate: startDate ? new Date(startDate) : existingSemester.startDate,
       endDate: endDate ? new Date(endDate) : existingSemester.endDate,
       isActive: isActive !== undefined ? isActive : existingSemester.isActive,
