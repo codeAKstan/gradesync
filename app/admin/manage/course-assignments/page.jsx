@@ -197,10 +197,10 @@ export default function CourseAssignmentsPage() {
   const handleEdit = (assignment) => {
     setEditingAssignment(assignment);
     setFormData({
-      courseId: assignment.course._id,
-      lecturerId: assignment.lecturer._id,
-      academicSessionId: assignment.academicSession._id,
-      semesterId: assignment.semester._id,
+      courseId: assignment.course?._id || '',
+      lecturerId: assignment.lecturer?._id || '',
+      academicSessionId: assignment.academicSession?._id || '',
+      semesterId: assignment.semester?._id || '',
       assignmentType: assignment.assignmentType || 'primary',
       isActive: assignment.isActive
     });
@@ -561,31 +561,37 @@ export default function CourseAssignmentsPage() {
                   <TableRow key={assignment._id}>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{assignment.course.title}</div>
+                        <div className="font-medium">{assignment.course?.title || 'Unknown Course'}</div>
                         <div className="text-sm text-muted-foreground font-mono">
-                          {assignment.course.code}
+                          {assignment.course?.code}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div>
                         <div className="font-medium">
-                          {assignment.lecturer.title && `${assignment.lecturer.title} `}
-                          {assignment.lecturer.firstName} {assignment.lecturer.lastName}
+                          {assignment.lecturer ? (
+                            <>
+                              {assignment.lecturer.title && `${assignment.lecturer.title} `}
+                              {assignment.lecturer.firstName} {assignment.lecturer.lastName}
+                            </>
+                          ) : (
+                            <span className="text-muted-foreground italic">No Lecturer Assigned</span>
+                          )}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {assignment.lecturer.staffId}
+                          {assignment.lecturer?.staffId}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      {assignment.academicSession.name}
+                      {assignment.academicSession?.name || 'Unknown Session'}
                       <div className="text-sm text-muted-foreground">
-                        {assignment.academicSession.startYear}-{assignment.academicSession.endYear}
+                        {assignment.academicSession ? `${assignment.academicSession.startYear}-${assignment.academicSession.endYear}` : ''}
                       </div>
                     </TableCell>
                     <TableCell>
-                      {assignment.semester.name}
+                      {assignment.semester?.name || 'Unknown Semester'}
                     </TableCell>
                     <TableCell>
                       <Badge variant={assignment.isActive ? "default" : "secondary"}>
